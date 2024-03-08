@@ -37,6 +37,8 @@ app.use((err, res, req, next) => {
 app.use(loggerMiddleware);
 app.use("/api/user/", userRoute);
 app.use("/api-docs", swagger.serve, swagger.setup(apiDocs));
+
+
 app.get("/", (req, res) => {
   res.render('Login')
 });
@@ -46,6 +48,33 @@ app.get("/login", (req, res) => {
 app.get("/signup", (req, res) => {
   res.render('signup')
 });
+
+const subjects = [
+  { id: 1, name: 'A' },
+  { id: 2, name: 'B' },
+  { id: 3, name: 'C' }
+];
+
+const faculties = [
+  { id: 1, name: 'a' },
+  { id: 2, name: 'b' },
+  { id: 3, name: 'c' }
+];
+
+app.get('/feedback', (req, res) => {
+  res.render('feedback', { subjects, faculties });
+});
+
+app.post('/feedback', (req, res) => {
+  // Process the form submission here
+  console.log(req.body);
+  const { subject, faculty } = req.body;
+
+    subjects = subjects.filter(s => s.id !== parseInt(subject));
+    faculties = faculties.filter(f => f.id !== parseInt(faculty));
+  res.redirect('/feedback');
+});
+
 app.use((req, res) => {
   res.status(404).send("API not found.");
 });

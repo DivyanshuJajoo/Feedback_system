@@ -1,0 +1,46 @@
+<!-- views/feedback.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback Page</title>
+    <link rel="stylesheet" href="/styles_feed.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Feedback Page</h1>
+        <form action="/feedback" method="post">
+            <label for="subject">Select Subject:</label>
+            <select id="subject" name="subject">
+                <% subjects.forEach(subject => { %>
+                    <option value="<%= subject.id %>"><%= subject.name %></option>
+                <% }); %>
+            </select><br><br>
+
+            <label for="faculty">Select Faculty:</label>
+            <select id="faculty" name="faculty">
+                <% faculties.forEach(faculty => { %>
+                    <option value="<%= faculty.id %>"><%= faculty.name %></option>
+                <% }); %>
+            </select><br><br>
+
+            <!-- Questions -->
+            <% for (let i = 1; i <= 10; i++) { %>
+                <label for="question<%= i %>">Question <%= i %>:</label>
+                <select id="question<%= i %>" name="question<%= i %>">
+                    <% for (let j = 1; j <= 10; j++) { %>
+                        <option value="<%= j %>"><%= j %></option>
+                    <% } %>
+                </select><br><br>
+            <% } %>
+
+            <!-- Remark -->
+            <label for="remark">Remark:</label><br>
+            <textarea id="remark" name="remark" rows="4" cols="50" required></textarea><br><br>
+
+            <button type="submit">Next</button>
+        </form>
+    </div>
+</body>
+</html>
