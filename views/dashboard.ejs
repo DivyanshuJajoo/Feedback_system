@@ -1,0 +1,27 @@
+<!-- views/dashboard.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Dashboard</title>
+    <link rel="stylesheet" href="/styles_dash.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Faculty Dashboard</h1>
+        <table>
+            <tr>
+                <th>Faculty Name</th>
+                <th>Average Score</th>
+            </tr>
+            <% for (const facultyName in facultyScores) { %>
+                <tr>
+                    <td><%= facultyName %></td>
+                    <td><%= facultyScores[facultyName] %></td>
+                </tr>
+            <% } %>
+        </table>
+    </div>
+</body>
+</html>

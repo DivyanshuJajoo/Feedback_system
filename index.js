@@ -49,31 +49,74 @@ app.get("/signup", (req, res) => {
   res.render('signup')
 });
 
-const subjects = [
+ var subjects = [
   { id: 1, name: 'A' },
   { id: 2, name: 'B' },
   { id: 3, name: 'C' }
 ];
 
-const faculties = [
-  { id: 1, name: 'a' },
-  { id: 2, name: 'b' },
-  { id: 3, name: 'c' }
+ var faculties = [
+  { UniqueID: 1, name: 'a' },
+  { UniqueID: 2, name: 'b' },
+  { UniqueID: 3, name: 'c' }
 ];
+const users = [
+  { UniqueID: 1, name: 'a',role:"Student",admin:0,has_filled:0,password:1 },
+  { UniqueID: 2, name: 'b' ,role:"Student",admin:0,has_filled:0,password:2 },
+  { UniqueID: 3, name: 'c' ,role:"Student",admin:0,has_filled:0,password:3 }  
+];
+
+const feedback = [
+  { facultyId: 1, subjectId: 1, scores: [5, 7, 8, 9, 6, 7, 8, 9, 10, 8], remark: 'Good' },
+  { facultyId: 1, subjectId: 2, scores: [8, 9, 7, 6, 8, 7, 6, 5, 8, 9], remark: 'Average' },
+  { facultyId: 2, subjectId: 1, scores: [9, 9, 8, 7, 9, 10, 8, 7, 9, 9], remark: 'Excellent' },
+  { facultyId: 2, subjectId: 2, scores: [7, 8, 9, 8, 7, 6, 8, 7, 8, 9], remark: 'Good' },
+];
+
 
 app.get('/feedback', (req, res) => {
   res.render('feedback', { subjects, faculties });
 });
 
-app.post('/feedback', (req, res) => {
-  // Process the form submission here
-  console.log(req.body);
+
+app.post("/signup", (req, res) => { 
+  res.render('login')
+});
+
+app.post("/login", (req, res) => {
+  res.render('feedback',{ subjects, faculties })
+});
+
+app.post('/feedback',(req, res) => {
   const { subject, faculty } = req.body;
 
-    subjects = subjects.filter(s => s.id !== parseInt(subject));
-    faculties = faculties.filter(f => f.id !== parseInt(faculty));
-  res.redirect('/feedback');
+    subjects = subjects.filter(s => s.name !== subject);
+    faculties = faculties.filter(f => f.name !== faculty);
+    if (!faculties || faculties.length === 0) {
+      res.send("Success");
+      return res.redirect('/login');
+  }
+
+    res.redirect('/feedback');
 });
+
+
+app.get('/dashboard', (req, res) => {
+  const facultyScores = {};
+  faculties.forEach(faculty => {
+      const feedbackData = feedback.filter(item => item.facultyId === faculty.UniqueID);
+      if (feedbackData.length > 0) {
+          const totalScore = feedbackData.reduce((acc, curr) => acc + curr.scores.reduce((a, c) => a + c, 0), 0);
+          const averageScore = totalScore / (feedbackData.length * 10); // Assuming each feedback has 10 questions
+          facultyScores[faculty.name] = averageScore.toFixed(2);
+      } else {
+          facultyScores[faculty.name] = 0;
+      }
+  });
+
+  res.render('dashboard', { facultyScores });
+});
+
 
 app.use((req, res) => {
   res.status(404).send("API not found.");
