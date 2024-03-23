@@ -5,6 +5,8 @@ import userRoute from "./src/features/user/user.routes.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";
+import pg from "pg"
+import bcrypt from "bcrypt"
 
 dotenv.config();
 import apiDocs from "./swagger_ver3.0.json" assert { type: "json" };
@@ -39,11 +41,26 @@ app.use("/api/user/", userRoute);
 app.use("/api-docs", swagger.serve, swagger.setup(apiDocs));
 
 
+const db = new pg.Client({
+  user: 'postgres',
+  host: 'localhost',
+  database: 'Feedback',
+  password: 'Jajoo@2001',
+  port: 5432,
+});
+
+db.connect((err, Client, release) => {
+  if (err) {
+    return console.error('Error acquiring client', err.stack);
+  }
+  console.log('Connected to PostgreSQL database');
+});
+
 app.get("/", (req, res) => {
   res.render('Login')
 });
 app.get("/login", (req, res) => {
-  res.render('Login')
+  res.render('login.ejs')
 });
 app.get("/signup", (req, res) => {
   res.render('signup')
@@ -60,11 +77,11 @@ app.get("/signup", (req, res) => {
   { UniqueID: 2, name: 'b' },
   { UniqueID: 3, name: 'c' }
 ];
-const users = [
-  { UniqueID: 1, name: 'a',role:"Student",admin:0,has_filled:0,password:1 },
-  { UniqueID: 2, name: 'b' ,role:"Student",admin:0,has_filled:0,password:2 },
-  { UniqueID: 3, name: 'c' ,role:"Student",admin:0,has_filled:0,password:3 }  
-];
+// const users = [
+//   { UniqueID: 1, name: 'a',role:"Student",admin:0,has_filled:0,password:1 },
+//   { UniqueID: 2, name: 'b' ,role:"Student",admin:0,has_filled:0,password:2 },
+//   { UniqueID: 3, name: 'c' ,role:"Student",admin:0,has_filled:0,password:3 }  
+// ];
 
 const feedback = [
   { facultyId: 1, subjectId: 1, scores: [5, 7, 8, 9, 6, 7, 8, 9, 10, 8], remark: 'Good' },
@@ -73,6 +90,41 @@ const feedback = [
   { facultyId: 2, subjectId: 2, scores: [7, 8, 9, 8, 7, 6, 8, 7, 8, 9], remark: 'Good' },
 ];
 
+
+// async function authenticateUser(uniqueid, password) {
+//   try {
+
+//     const query1 = 'SELECT * FROM users ORDER BY uniqueid LIMIT 1'; 
+//     const result1 = await db.query(query1);
+//     const firstUser = result1.rows[0];
+//     console.log('First user:', firstUser);
+
+//     const query = 'SELECT * FROM users WHERE "uniqueid" = $1';
+//     const result = await db.query(query, [uniqueid]);
+
+//     console.log('User data from database:', result.rows);
+
+//     if (result.rows.length === 0) {
+//       return { success: false, message: 'Invalid credentials' };
+//     }
+
+//     const user = result.rows[0];
+
+//     console.log('User retrieved:', user);
+//     const isPasswordMatch = await bcrypt.compare(password, user.password);
+
+//     console.log('Password match:', isPasswordMatch);
+
+//     if (isPasswordMatch) {
+//       return { success: true, user: user };
+//     } else {
+//       return { success: false, message: 'Invalid credentials' };
+//     }
+//   } catch (error) {
+//     console.error('Error authenticating user:', error);
+//     return { success: false, message: 'An error occurred while authenticating' };
+//   }
+// }
 
 app.get('/feedback', (req, res) => {
   res.render('feedback', { subjects, faculties });
@@ -83,9 +135,69 @@ app.post("/signup", (req, res) => {
   res.render('login')
 });
 
-app.post("/login", (req, res) => {
-  res.render('feedback',{ subjects, faculties })
+app.post("/login", async(req, res) => {
+
+  const uniqueid=req.body.uniqueid1
+  const password=req.body.password;
+  const body=req.body
+
+  console.log(body)
+  console.log(uniqueid)
+  console.log(password)
+
+  try{
+    const query1 = 'SELECT * FROM users ORDER BY uniqueid LIMIT 1'; 
+    const result1 = await db.query(query1);
+    const firstUser = result1.rows[0];
+    console.log('First user:', firstUser);
+    const result= await db.query("SELECT * FROM users WHERE uniqueid=$1",[uniqueid,]);
+    console.log('User data from database:', result.rows);
+    if(result.rowCount.length>0){
+      const user=result.rows[0];
+      const storedpassword=user.password;
+
+      if(password===storedpassword){
+        res.render('feedback',{subjects,faculties});
+      }
+      else {
+        res.send("INCORRECT LOGIN CREDENTIALS");
+      }
+    }
+    else{
+      res.send("USER NOT FOUND");
+    }
+    
+  }
+  catch(err){
+    console.log(err);
+  }
+  // try {
+  //   const { uniqueid, password } = req.body;
+  //   const authResult = await authenticateUser(uniqueid, password);
+
+  //   if (authResult.success) {
+  //     // return res.render('feedback',{ subjects, faculties }, { user: authResult.user });
+  //     if (req.user.role === 'Student') {
+  //           return res.redirect('feedback',{subjects, faculties}, { user: authResult.user });
+  //       } else {
+  //           return res.redirect('dashboard');
+  //       }
+  //   } else {
+  //     return res.status(401).send('Invalid credentials');
+  //   }
+  // } catch (error) {
+  //   console.error('Error during login:', error);
+  //   return res.status(500).send('Internal server error');
+  // }
+  
+  // res.render('feedback',{ subjects, faculties })
+//   if (req.user.role === 'Student') {
+//     return res.redirect('feedback',{subjects, faculties});
+// } else {
+//     return res.redirect('dashboard');
+// }
 });
+
 
 app.post('/feedback',(req, res) => {
   const { subject, faculty } = req.body;
@@ -107,7 +219,7 @@ app.get('/dashboard', (req, res) => {
       const feedbackData = feedback.filter(item => item.facultyId === faculty.UniqueID);
       if (feedbackData.length > 0) {
           const totalScore = feedbackData.reduce((acc, curr) => acc + curr.scores.reduce((a, c) => a + c, 0), 0);
-          const averageScore = totalScore / (feedbackData.length * 10); // Assuming each feedback has 10 questions
+          const averageScore = totalScore / (feedbackData.length * 10);
           facultyScores[faculty.name] = averageScore.toFixed(2);
       } else {
           facultyScores[faculty.name] = 0;
