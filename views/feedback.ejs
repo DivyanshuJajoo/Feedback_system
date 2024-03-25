@@ -15,14 +15,14 @@
             <label for="subject">Select Subject:</label>
             <select id="subject" name="subject">
                 <% subjects.forEach(subject => { %>
-                    <option value="<%= subject.id %>"><%= subject.name %></option>
+                    <option><%= subject %></option>
                 <% }); %>
             </select><br><br>
 
             <label for="faculty">Select Faculty:</label>
             <select id="faculty" name="faculty">
                 <% faculties.forEach(faculty => { %>
-                    <option value="<%= faculty.id %>"><%= faculty.name %></option>
+                    <option>"><%= faculty %></option>
                 <% }); %>
             </select><br><br>
 

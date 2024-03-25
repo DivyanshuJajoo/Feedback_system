@@ -15,10 +15,12 @@ import { connectToMongoDB } from "./src/config/mongodb.js";
 import loggerMiddleware from "./src/middleware/logger.middleware.js";
 import jwtAuthProf from "./src/middleware/jwt.middleware.js";
 const app = express();
+const saltRounds=10;
 app.set('view engine', 'ejs');
 app.use(express.static("public"));
 
 app.use(bodyParser.json({ type: "application/*+json" }));
+app.use(bodyParser.urlencoded({ extended: false }))
 var urlencodedParser = bodyParser.urlencoded({ extended: true });
 app.use(cookieParser());
 const port = process.env.PORT || 3000;
@@ -56,27 +58,73 @@ db.connect((err, Client, release) => {
   console.log('Connected to PostgreSQL database');
 });
 
-app.get("/", (req, res) => {
-  res.render('Login')
-});
-app.get("/login", (req, res) => {
+app.get("/", async(req, res) => {
   res.render('login.ejs')
 });
-app.get("/signup", (req, res) => {
+app.get("/login", async(req, res) => {
+  res.render('login.ejs')
+});
+app.get("/signup", async(req, res) => {
   res.render('signup')
 });
 
- var subjects = [
-  { id: 1, name: 'A' },
-  { id: 2, name: 'B' },
-  { id: 3, name: 'C' }
-];
+//  var subjects = [
+//   { id: 1, name: 'A' },
+//   { id: 2, name: 'B' },
+//   { id: 3, name: 'C' }
+// ];
 
- var faculties = [
-  { UniqueID: 1, name: 'a' },
-  { UniqueID: 2, name: 'b' },
-  { UniqueID: 3, name: 'c' }
-];
+let subjects=[];
+let faculties=[];
+async function fetchSubjects(branchName, yearValue) {
+  const sqlQuery = {
+    text: 'SELECT subjects FROM Branch_sub WHERE branch_name = $1 AND year = $2',
+    values: [branchName, parseInt(yearValue)]
+  };
+  
+
+  try {
+    const res = await db.query(sqlQuery);
+    return res.rows.map(row => row.subjects);
+  } catch (err) {
+    console.error('Error executing query:', err);
+    return [];
+  }
+}
+async function fetchfaculties(subjects) {
+  // console.log(subject);
+  // const facultyQuery = {
+  //   text: 'SELECT faculty_name FROM subject WHERE subject_name = $1',
+  //   values: [subject]
+  // };
+  
+    for (const subject of subjects) {
+      const facultyQuery = {
+        text: 'SELECT faculty_name FROM Subject WHERE subject_name = $1',
+        values: [subject]
+      };
+      try{
+      const facultyRes = await db.query(facultyQuery);
+      const facultiesForSubject = facultyRes.rows.map(row => row.faculty_name);
+      console.log(facultiesForSubject);
+      for(const fac of facultiesForSubject)faculties.push(fac);
+      // faculties[subject] = facultiesForSubject;
+      
+    }
+    catch (err) {
+      console.error('Error fetching subjects and faculties:', err);
+    }
+  } 
+  return faculties;
+  return [];
+}
+
+
+//  var faculties = [
+//   { UniqueID: 1, name: 'a' },
+//   { UniqueID: 2, name: 'b' },
+//   { UniqueID: 3, name: 'c' }
+// ];
 // const users = [
 //   { UniqueID: 1, name: 'a',role:"Student",admin:0,has_filled:0,password:1 },
 //   { UniqueID: 2, name: 'b' ,role:"Student",admin:0,has_filled:0,password:2 },
@@ -126,38 +174,55 @@ const feedback = [
 //   }
 // }
 
-app.get('/feedback', (req, res) => {
+app.get('/feedback', async(req, res) => {
   res.render('feedback', { subjects, faculties });
 });
 
 
-app.post("/signup", (req, res) => { 
+app.post("/signup", async(req, res) => { 
+  const email=req.body;
+  console.log(email);
+
   res.render('login')
 });
 
 app.post("/login", async(req, res) => {
 
-  const uniqueid=req.body.uniqueid1
+  const uniqueid=req.body.uniqueid
   const password=req.body.password;
   const body=req.body
 
-  console.log(body)
-  console.log(uniqueid)
-  console.log(password)
+  // console.log(body)
+  // console.log(uniqueid)
+  // console.log(password)
 
   try{
-    const query1 = 'SELECT * FROM users ORDER BY uniqueid LIMIT 1'; 
-    const result1 = await db.query(query1);
-    const firstUser = result1.rows[0];
-    console.log('First user:', firstUser);
+    // const query1 = 'SELECT * FROM users ORDER BY uniqueid LIMIT 1'; 
+    // const result1 = await db.query(query1);
+    // const firstUser = result1.rows[0];
+    // console.log('First user:', firstUser);
     const result= await db.query("SELECT * FROM users WHERE uniqueid=$1",[uniqueid,]);
     console.log('User data from database:', result.rows);
-    if(result.rowCount.length>0){
+    if(result.rowCount>0){
       const user=result.rows[0];
       const storedpassword=user.password;
 
+      // console.log(password);
+      // console.log(storedpassword);
+
       if(password===storedpassword){
-        res.render('feedback',{subjects,faculties});
+        const role=user.role;
+        if (role === 'Student') {
+          const branch_name=user.branch;
+          const year=user.year;
+          const subjects = await fetchSubjects(branch_name, year);
+          const faculties = await fetchfaculties(subjects);
+          console.log('Subjects outside:', subjects);
+          console.log('faculties:',faculties);
+          res.render('feedback',{subjects, faculties});
+      } else {
+          res.render('dashboard');
+      }
       }
       else {
         res.send("INCORRECT LOGIN CREDENTIALS");
