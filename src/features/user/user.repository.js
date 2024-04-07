@@ -21,14 +21,16 @@ export default class userRepository {
   // }
 
   async signIn(uniqueID, password) {
+    // console.log("1111"+uniqueID);
     
     try {
       const db = getDB();
       const result = await db.query("SELECT * FROM users WHERE uniqueid=$1", [
         uniqueID,
       ]);
-      console.log("User data from database:", result.rows);
-      return result;
+      // console.log(result);
+      // console.log("User data from database:", result.rows);
+      return result.rows[0];
       // if (result.rowCount > 0) {
       //   return result;
       //   const user = result.rows[0];
@@ -41,7 +43,7 @@ export default class userRepository {
       //     return user;
       //     const role = user.role;
       //     //  return "login succesful";
-      //     if (role === "Student") {
+      //     if (role === "Student") { 
           
 
 
@@ -65,6 +67,26 @@ export default class userRepository {
     } catch (e) {
       // throw new ApplicationError("something went wrong", 500);
       console.log(e);
+    }
+  }
+
+
+  async findByuniqueid(uniqueid) {
+    try {
+      const db = getDB();
+      const result = await db.query("SELECT * FROM users WHERE uniqueid=$1", [
+        uniqueid,
+      ]);
+      // console.log(result);
+
+      if (result.rowCount > 0) {
+        return result.rows[0]; // Return the first row (assuming ID is unique)
+      } else {
+        return null; // User not found
+      }
+    } catch (error) {
+      console.error("Error fetching user by uniqueid:", error);
+      throw error;
     }
   }
 }

@@ -5,17 +5,13 @@ import bcrypt from "bcrypt";
 import { getDB } from "../../config/postgreSQL.js";
 import subjectRepository from "../subject/subject.repositary.js";
 import branchRepository from "../branch_sub/branch.repositary.js";
-// import passport from "passport";
-// import { Strategy } from "passport-local";
-// import session from "express-session";
+import feedbackRepository from "../feedback/feedback.repositary.js";
+import passport from "passport";
+import { Strategy } from "passport-local";
+const LocalStrategy = Strategy;
+import session from "express-session";
 
-// app.use(
-//   session({
-//     secret: "TOPSECRETWORD",
-//     resave: false,
-//     saveUninitialized: true,
-//   })
-// );
+
 
 // app.use(passport.initialize());
 // app.use(passport.session());
@@ -23,143 +19,160 @@ export default class UserController {
   constructor() {
     (this.userRepo = new userRepository()),
     (this.subjectRepo = new subjectRepository()),
+    (this.feedbackRepo = new feedbackRepository()),
       (this.branchRepo = new branchRepository());
   }
 
-  // async feedback(req,res){
-  //   if (req.isAuthenticated()) {
-  //     res.render("feedback.ejs");
-  //   } else {
-  //     res.redirect("/login");
-  //   }
+ 
+  
+  async login(req, res) {
+
+    // console.log(req.body);
+    let user;
+    passport.use(
+      new LocalStrategy(async (username, password, done) => {
+        console.log(username);
+        user = await this.userRepo.signIn(username, password);
+
+        if (!user) {
+          return done(null, false, { message: "Incorrect username." });
+        }
+        if (user.password !== password) {
+          return done(null, false, { message: "Incorrect password." });
+        }
+        return done(null, user);
+      })
+    );
+    let flag=true;
+    passport.authenticate("local")(req, res, async() => {
+      console.log(user);
+      if (!user) {
+              // Authentication failed, redirect to login page with error message
+              return res.redirect("/login?error=auth");
+            }
+            // Authentication successful, check user's rrole and redirect accordingly
+            if (user.role === "Student") {
+              if(user.has_filled===false){
+              const branch_name = user.branch_name;
+                const year = user.year;
+                const subjects = await this.branchRepo.fetchSubjects(branch_name, year);
+                const faculties = await this.subjectRepo.fetchfaculties(subjects,user.section);
+                const questionsArray = [
+                  "How would you rate the clarity of the instructor's explanations?",
+                  "Did the instructor effectively engage with the students?",
+                  "Were the course materials organized and easy to follow?",
+                  "Did the instructor provide helpful feedback on assignments?",
+                  "How approachable was the instructor for questions and assistance?",
+                  "Did the instructor encourage active participation in class discussions?",
+                  "Did the instructor demonstrate a good understanding of the subject matter?",
+                  "Was the pace of the course appropriate for learning?",
+                  "Did the instructor encourage critical thinking and problem-solving?",
+                  "Overall, how satisfied are you with the instructor's teaching?"
+              ];
+                console.log("Subjects outside:", subjects);
+                console.log("faculties:", faculties);
+                // res.send("asdmfklsvjbhskalj");
+                res.render('feedback',{ subjects, faculties,questionsArray });
+            }
+            else{
+              res.send("You have already filled the feedback");
+            }
+            } else {
+              const uniqueid=user.uniqueid;
+              const feedbacks=await this.feedbackRepo.fetchfeedback(uniqueid);
+              console.log(feedbacks);
+              return res.render("dashboard",{feedbacks});
+            }
+    });
+   
+    // passport.use(
+    //   new LocalStrategy(async (uniqueid, password, done) => {
+    //     console.log(uniqueid);
+    //     const user = await this.userRepo.signIn(uniqueid, password);
+    //     console.log(user);
+    //     if (!user) {
+    //       return done(null, false, { message: "Incorrect unqiueid." });
+    //     }
+    //     if (user.password !== password) {
+    //       return done(null, false, { message: "Incorrect password." });
+    //     }
+    //     return done(null, user);
+    //   })
+    // );
+    //   passport.authenticate("local", async(err, user, info) => {
+    //     console.log(user+"1");
+    //     if (err) {
+    //       return res.status(500).send("Internal server error.");
+    //     }
+    //     if (!user) {
+    //       // Authentication failed, redirect to login page with error message
+    //       return res.redirect("/login?error=auth");
+    //     }
+    //     // Authentication successful, check user's rrole and redirect accordingly
+    //     if (user.role === "Student") {
+    //       const branch_name = user.branch;
+    //         const year = user.year;
+    //         const subjects = await this.branchRepo.fetchSubjects(branch_name, year);
+    //         const faculties = await this.subjectRepo.fetchfaculties(subjects,section);
+    //         console.log("Subjects outside:", subjects);
+    //         console.log("faculties:", faculties);
+    //         res.redirect('feedback',{ subjects, faculties });
+    //     } else {
+    //       return res.redirect("/dashboard");
+    //     }
+    //   })(req, res);
+  }
+
+  // async login(req, res) {
+  //   const uniqueid = req.body.uniqueid;
+  //   const password = req.body.password;
+  //   // const body = req.body;
+  //   const result = await this.userRepo.signIn(uniqueid, password);
+  //   if (result.rowCount > 0) {
+  //       const user = result.rows[0];
+  //       const storedpassword = user.password;
+  //       const section=user.section;
+
+  //       // console.log(password);
+  //       // console.log(storedpassword);
+
+  //       if (password === storedpassword) {
+  //         // return user;
+  //         const role = user.role;
+  //         //  return "login succesful";
+  //         if (role === "Student") {
+  //           const branch_name = user.branch;
+  //           const year = user.year;
+  //           const subjects = await this.branchRepo.fetchSubjects(branch_name, year);
+  //           const faculties = await this.subjectRepo.fetchfaculties(subjects,section);
+  //           console.log("Subjects outside:", subjects);
+  //           console.log("faculties:", faculties);
+  //           res.render('feedback',{ subjects, faculties });
+  //         } else {
+  //           res.render('dashboard');
+  //         }
+  //       } else {
+  //         res.send("Incorrect Login Credentials");
+  //       }
+  //     }
+  //     else res.send("USER NOT FOUND");
+    
   // }
 
-  // async login(
-  //   passport.authenticate("local", {
-  //   successRedirect: "/feedback",
-  //   failureRedirect: "/login",
-  // }));
 
-  // passport.use(
-  //   new Strategy(async function verify(username, password, cb) {
+  // async feedback(req,res){
+  //   const subject=req.body.subject;
+  //   const faculty=req.body.faculty;
 
+  //   subjects = subjects.filter(s => s !== subject);
+  //   faculties = faculties.filter(f => f !== faculty);
+  //   if (!faculties || faculties.length === 0) {
+  //     res.send("Success");
+  //     return res.redirect('/login');
+  // }
 
-  //     const uniqueid = req.body.uniqueid;
-  //     const password = req.body.password;
-  //     const body = req.body;
-  //     const result = await this.userRepo.signIn(uniqueid, password);
-  //     if (result.rowCount > 0) {
-  //         const user = result.rows[0];
-  //         const storedpassword = user.password;
-
-  //         // console.log(password);
-  //         // console.log(storedpassword);
-
-  //         if (password === storedpassword) {
-  //           // return user;
-  //           const role = user.role;
-  //           //  return "login succesful";
-  //           if (role === "Student") {
-  //             const branch_name = user.branch;
-  //             const year = user.year;
-  //             const subjects = await this.branchRepo.fetchSubjects(branch_name, year);
-  //             const faculties = await this.subjectRepo.fetchfaculties(subjects);
-  //             // console.log("Subjects outside:", subjects);
-  //             // console.log("faculties:", faculties);
-  //             return cb('feedback',{ subjects, faculties });
-  //           } else {
-  //             return cb('feedback');
-  //           }
-  //         } else {
-  //           return cb("Incorrect Login Credentials");
-  //         }
-  //       }
-  //       else res.send("USER NOT FOUND");
-
-
-      // try {
-      //   const result = await db.query("SELECT * FROM users WHERE email = $1 ", [
-      //     username,
-      //   ]);
-      //   if (result.rows.length > 0) {
-      //     const user = result.rows[0];
-      //     const storedHashedPassword = user.password;
-      //     bcrypt.compare(password, storedHashedPassword, (err, valid) => {
-      //       if (err) {
-      //         //Error with password check
-      //         console.error("Error comparing passwords:", err);
-      //         return cb(err);
-      //       } else {
-      //         if (valid) {
-      //           //Passed password check
-      //           return cb(null, user);
-      //         } else {
-      //           //Did not pass password check
-      //           return cb(null, false);
-      //         }
-      //       }
-      //     });
-      //   } else {
-      //     return cb("User not found");
-      //   }
-      // } catch (err) {
-      //   console.log(err);
-      // }
-  //   })
-  // );
-  
-  
-
-  async login(req, res) {
-    const uniqueid = req.body.uniqueid;
-    const password = req.body.password;
-    // const body = req.body;
-    const result = await this.userRepo.signIn(uniqueid, password);
-    if (result.rowCount > 0) {
-        const user = result.rows[0];
-        const storedpassword = user.password;
-        const section=user.section;
-
-        // console.log(password);
-        // console.log(storedpassword);
-
-        if (password === storedpassword) {
-          // return user;
-          const role = user.role;
-          //  return "login succesful";
-          if (role === "Student") {
-            const branch_name = user.branch;
-            const year = user.year;
-            const subjects = await this.branchRepo.fetchSubjects(branch_name, year);
-            const faculties = await this.subjectRepo.fetchfaculties(subjects,section);
-            console.log("Subjects outside:", subjects);
-            console.log("faculties:", faculties);
-            res.render('feedback',{ subjects, faculties });
-          } else {
-            res.render('dashboard');
-          }
-        } else {
-          res.send("Incorrect Login Credentials");
-        }
-      }
-      else res.send("USER NOT FOUND");
-    
-  }
-
-
-  async feedback(req,res){
-    const subject=req.body.subject;
-    const faculty=req.body.faculty;
-
-    subjects = subjects.filter(s => s !== subject);
-    faculties = faculties.filter(f => f !== faculty);
-    if (!faculties || faculties.length === 0) {
-      res.send("Success");
-      return res.redirect('/login');
-  }
-
-    res.redirect('/feedback');
-  }
+  //   res.redirect('/feedback');
+  // }
 
 }
 

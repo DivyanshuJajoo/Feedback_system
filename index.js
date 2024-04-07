@@ -16,10 +16,14 @@ import { ApplicationError } from "./src/errorHandle/error.js";
 import { connectToDB, getDB } from "./src/config/postgreSQL.js";
 import loggerMiddleware from "./src/middleware/logger.middleware.js";
 import jwtAuthProf from "./src/middleware/jwt.middleware.js";
+import userRepository from "./src/features/user/user.repository.js";
 const app = express();
 const saltRounds=10;
 app.set('view engine', 'ejs');
 app.use(express.static("public"));
+
+
+/////passport
 
 app.use(
   session({
@@ -34,6 +38,25 @@ app.use(
 
 app.use(passport.initialize())
 app.use(passport.session())
+
+
+passport.serializeUser((user, done) => {
+  // console.log(user);
+  done(null, user.uniqueid);
+});
+passport.deserializeUser(async (id, done) => {
+  // console.log(id);
+
+  const repo = new userRepository();
+  await repo.findByuniqueid(id).then((user) => {
+    // console.log(user);
+    done(null, user);
+  });
+});
+
+
+
+////passport end
 
 app.use(bodyParser.json({ type: "application/*+json" }));
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -58,7 +81,18 @@ app.use(loggerMiddleware);
 app.use("/api/user/", userRoute);
 app.use("/api-docs", swagger.serve, swagger.setup(apiDocs));
 
-
+const questionsArray = [
+  "How would you rate the clarity of the instructor's explanations?",
+  "Did the instructor effectively engage with the students?",
+  "Were the course materials organized and easy to follow?",
+  "Did the instructor provide helpful feedback on assignments?",
+  "How approachable was the instructor for questions and assistance?",
+  "Did the instructor encourage active participation in class discussions?",
+  "Did the instructor demonstrate a good understanding of the subject matter?",
+  "Was the pace of the course appropriate for learning?",
+  "Did the instructor encourage critical thinking and problem-solving?",
+  "Overall, how satisfied are you with the instructor's teaching?"
+];
 // const db = new pg.Client({
 //   user: 'postgres',
 //   host: 'localhost',
@@ -93,66 +127,123 @@ app.post(
 );
 
 
-// let subjects=[];
-// let faculties=[];
-// async function fetchSubjects(branchName, yearValue) {
-//   const db=getDB();
-//   const sqlQuery = {
-//     text: 'SELECT subjects FROM Branch_sub WHERE branch_name = $1 AND year = $2',
-//     values: [branchName, parseInt(yearValue)]
-//   };
-  
-
-//   try {
-//     const res = await db.query(sqlQuery);
-//     return res.rows.map(row => row.subjects);
-//   } catch (err) {
-//     console.error('Error executing query:', err);
-//     return [];
-//   }
-// // }
-// async function fetchfaculties(subjects) {
-  // console.log(subject);
-  // const facultyQuery = {
-  //   text: 'SELECT faculty_name FROM subject WHERE subject_name = $1',
-  //   values: [subject]
-  // };
-//   const db=getDB();
-  
-//     for (const subject of subjects) {
-//       const facultyQuery = {
-//         text: 'SELECT faculty_name FROM Subject WHERE subject_name = $1',
-//         values: [subject]
-//       };
-//       try{
-//       const facultyRes = await db.query(facultyQuery);
-//       const facultiesForSubject = facultyRes.rows.map(row => row.faculty_name);
-//       console.log(facultiesForSubject);
-//       for(const fac of facultiesForSubject)faculties.push(fac);
-//       // faculties[subject] = facultiesForSubject;
-      
-//     }
-//     catch (err) {
-//       console.error('Error fetching subjects and faculties:', err);
-//     }
-//   } 
-//   return faculties;
-// }
-
-
-const feedback = [
-  { facultyId: 1, subjectId: 1, scores: [5, 7, 8, 9, 6, 7, 8, 9, 10, 8], remark: 'Good' },
-  { facultyId: 1, subjectId: 2, scores: [8, 9, 7, 6, 8, 7, 6, 5, 8, 9], remark: 'Average' },
-  { facultyId: 2, subjectId: 1, scores: [9, 9, 8, 7, 9, 10, 8, 7, 9, 9], remark: 'Excellent' },
-  { facultyId: 2, subjectId: 2, scores: [7, 8, 9, 8, 7, 6, 8, 7, 8, 9], remark: 'Good' },
-];
 
 
 
 
-// app.get('/feedback', async(req, res) => {
-//   res.render('feedback', { subjects, faculties });
-// });
+app.post('/submit-feedback', async (req, res) => {
+  const db=getDB();
+ const user=req.user;
+ const uniqueid=user.uniqueid;
+ const year=user.year;
+ const section=user.section;
+ const branch=user.branch_name;
+ const faculties = JSON.parse(req.body.faculties);
+ const obj = JSON.parse(JSON.stringify(req.body)); 
+ req.body=obj;
+ console.log(req.body);
+
+ const updateUserQuery = {
+  text: `
+      UPDATE users
+      SET has_filled = TRUE
+      WHERE uniqueid = $1
+  `,
+  values: [uniqueid]
+};
+await db.query(updateUserQuery);
+
+ try{
+ for (let i = 0; i <faculties.length; i++) {
+  // console.log('inside');
+  // const facultyId = req.faculties[i].Assigned_faculty.id;
+  const facultyFeedback = {};
+  for (let j = 1; j <= 10; j++) {
+    facultyFeedback[j] = req.body[`selectedPoint${i}-${j}`];
+}
+  const feedbackData = {
+    fac_id: faculties[i].Assigned_faculty.id,
+    subject:faculties[i].subject,
+    year: year,
+    branch: branch,
+    section: section,
+    Q1: facultyFeedback[1], // Assuming ratingResponses is an array of objects containing ratings for each question
+    Q2: facultyFeedback[2],
+    Q3: facultyFeedback[3],
+    Q4: facultyFeedback[4],
+    Q5: facultyFeedback[5],
+    Q6: facultyFeedback[6],
+    Q7: facultyFeedback[7],
+    Q8: facultyFeedback[8],
+    Q9: facultyFeedback[9],
+    Q10: facultyFeedback[10],
+    responses:1,
+  };
+
+  const existingFeedback = await db.query({
+    text: `
+        SELECT * FROM feedback
+        WHERE fac_id = $1 AND subject = $2 AND year = $3 AND branch = $4 AND section = $5
+    `,
+    values: [feedbackData.fac_id, feedbackData.subject, feedbackData.year, feedbackData.branch, feedbackData.section]
+});
+
+if (existingFeedback.rows.length > 0) {
+  // Update existing entry
+  const updateQuery = {
+      text: `
+          UPDATE feedback
+          SET q1 = q1 + $6, q2 = q2 + $7, q3 = q3 + $8, q4 = q4 + $9, q5 = q5 + $10,
+              q6 = q6 + $11, q7 = q7 + $12, q8 = q8 + $13, q9 = q9 + $14, q10 = q10 + $15,
+              responses = responses + 1
+          WHERE fac_id = $1 AND subject = $2 AND year = $3 AND branch = $4 AND section = $5
+      `,
+      values: [
+          feedbackData.fac_id, feedbackData.subject, feedbackData.year, feedbackData.branch, feedbackData.section,
+          feedbackData.Q1, feedbackData.Q2, feedbackData.Q3, feedbackData.Q4, feedbackData.Q5,
+          feedbackData.Q6, feedbackData.Q7, feedbackData.Q8, feedbackData.Q9, feedbackData.Q10
+      ]
+  };
+  await db.query(updateQuery);
+} else {
+
+  const feedbackQuery = {
+    text: `
+      INSERT INTO feedback (fac_id, subject,year,branch,section,q1, q2, q3, q4, q5, q6, q7, q8, q9, q10,responses)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14,$15,$16 )
+    `,
+    values: [
+      feedbackData.fac_id,
+      feedbackData.subject,
+      feedbackData.year,
+      feedbackData.branch,
+      feedbackData.section,
+      feedbackData.Q1,
+      feedbackData.Q2,
+      feedbackData.Q3,
+      feedbackData.Q4,
+      feedbackData.Q5,
+      feedbackData.Q6,
+      feedbackData.Q7,
+      feedbackData.Q8,
+      feedbackData.Q9,
+      feedbackData.Q10,
+      feedbackData.responses
+    ]
+  };
+  await db.query(feedbackQuery);
+}
+ }
+
+res.status(200).send('Feedback submitted successfully.');
+}
+ catch (error) {
+console.error('Error while submitting feedback:', error);
+res.status(500).send('Internal Server Error');
+} 
+ 
+});
+
 
 
 app.post("/signup", async(req, res) => { 
@@ -162,70 +253,8 @@ app.post("/signup", async(req, res) => {
   res.render('login')
 });
 
-// app.post("/login", async(req, res) => {
-
-//   const uniqueid=req.body.uniqueid
-//   const password=req.body.password;
-//   const body=req.body
 
 
-//   try{
-//     // const query1 = 'SELECT * FROM users ORDER BY uniqueid LIMIT 1'; 
-//     // const result1 = await db.query(query1);
-//     // const firstUser = result1.rows[0];
-//     // console.log('First user:', firstUser);
-//     const db=getDB();
-//     const result= await db.query("SELECT * FROM users WHERE uniqueid=$1",[uniqueid,]);
-//     console.log('User data from database:', result.rows);
-//     if(result.rowCount>0){
-//       const user=result.rows[0];
-//       const storedpassword=user.password;
-
-//       // console.log(password);
-//       // console.log(storedpassword);
-
-//       if(password===storedpassword){
-//         const role=user.role;
-//         if (role === 'Student') {
-//           const branch_name=user.branch;
-//           const year=user.year;
-//           const subjects = await fetchSubjects(branch_name, year);
-//           const faculties = await fetchfaculties(subjects);
-//           console.log('Subjects outside:', subjects);
-//           console.log('faculties:',faculties);
-//           res.render('feedback',{subjects, faculties});
-//       } else {
-//           res.render('dashboard');
-//       }
-//       }
-//       else {
-//         res.send("INCORRECT LOGIN CREDENTIALS");
-//       }
-//     }
-//     else{
-//       res.send("USER NOT FOUND");
-//     }
-    
-//   }
-//   catch(err){
-//     console.log(err);
-//   }
- 
-// });
-
-
-// app.post('/feedback',(req, res) => {
-//   const { subject, faculty } = req.body;
-
-//     subjects = subjects.filter(s => s.name !== subject);
-//     faculties = faculties.filter(f => f.name !== faculty);
-//     if (!faculties || faculties.length === 0) {
-//       res.send("Success");
-//       return res.redirect('/login');
-//   }
-
-//     res.redirect('/feedback');
-// });
 
 
 app.get('/dashboard', (req, res) => {

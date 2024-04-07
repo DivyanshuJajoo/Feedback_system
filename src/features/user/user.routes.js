@@ -7,9 +7,16 @@ const userRoute = express.Router();
 //   userController.signUp(req, res);
 // });
 userRoute.post("/login", (req, res) => {
+  // console.log(req.body);
+  const obj = JSON.parse(JSON.stringify(req.body)); // req.body = [Object: null prototype] { title: 'product' }
+
+// console.log(obj); // { title: 'product' }
+req.body=obj;
   userController.login(req, res);
 });
-
+userRoute.get("/login", (req, res) => {
+  res.render("login");
+});
 
 // userRoute.post("/feedback", (req,res) => {
 //   userController.feedback(req,res);
