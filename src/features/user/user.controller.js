@@ -54,6 +54,7 @@ export default class UserController {
             if (user.role === "Student") {
               if(user.has_filled===false){
               const branch_name = user.branch_name;
+              const uniqueId=user.uniqueid;
                 const year = user.year;
                 const subjects = await this.branchRepo.fetchSubjects(branch_name, year);
                 const faculties = await this.subjectRepo.fetchfaculties(subjects,user.section);
@@ -72,7 +73,7 @@ export default class UserController {
                 console.log("Subjects outside:", subjects);
                 console.log("faculties:", faculties);
                 // res.send("asdmfklsvjbhskalj");
-                res.render('feedback',{ subjects, faculties,questionsArray });
+                res.render('feedback',{ subjects, faculties,questionsArray ,uniqueId});
             }
             else{
               res.send("You have already filled the feedback");

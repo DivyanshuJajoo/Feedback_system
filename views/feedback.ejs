@@ -43,6 +43,7 @@
         <h4>
           Note: 10 will be considered as best and 1 will be considered as worst.
         </h4>
+        <input type="hidden" name="uniqueId" id="uniqueId" value="<%= uniqueId %>">
         <input type="hidden" name="faculties" id="faculties" value='<%= JSON.stringify(faculties) %>'>
         <% faculties.forEach((faculty, index) => { %>
         <div
@@ -102,6 +103,56 @@
               var facultiesCount = <%= faculties.length %>;
               var filledSections = 0;
               var ratingResponses = [];
+
+
+    //           var userId = document.getElementById('uniqueId').value; // Retrieve uniqueId from input field
+    // var storageKey = 'ratingResponses_' + userId; // Create unique storage key
+
+    // var currentIndex = 0;
+    // var facultiesCount = <%= faculties.length %>;
+    // var filledSections = 0;
+    // var ratingResponses = JSON.parse(localStorage.getItem(storageKey)) || [];
+
+    // function saveRatingResponses() {
+    //     localStorage.setItem(storageKey, JSON.stringify(ratingResponses));
+    // }
+
+    // function restoreSelectedOptions() {
+    //     console.log("Restoring selected options");
+    //     ratingResponses.forEach(function(response, index) {
+    //         for (var question in response) {
+    //             var point = response[question];
+    //             var activeOption = document.querySelector('#faculty' + index + ' #point' + index + '-' + question + '-' + point);
+    //             if (activeOption) {
+    //                 activeOption.classList.add('active');
+    //                 document.getElementById('selectedPoint' + index + '-' + question).value = point;
+    //             }
+    //         }
+    //     });
+    // }
+
+    // window.onload = function() {
+    //     console.log("Page loaded");
+    //     restoreSelectedOptions();
+    // };
+
+              function restoreSelectedOptions() {
+               console.log("Restoring selected options");
+              ratingResponses.forEach(function(response, index) {
+              for (var question in response) {
+              var point = response[question];
+              var activeOption = document.querySelector('#faculty' + index + ' .bullet-points li[data-question="' + question + '"][data-point="' + point + '"]');
+               if (activeOption) {
+                activeOption.classList.add('active');
+                document.getElementById('selectedPoint' + index + '-' + question).value = point;
+            }
+        }
+    });
+}
+              window.onload = function() {
+    console.log("Page loaded");
+    restoreSelectedOptions();
+};
 
               function showNextFaculty(index) {
                   document.getElementById('faculty' + index).style.display = 'none';
