@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/assets/css/font-awesome.min.css" rel="stylesheet">
+    <link href="/assets/css/style.css" rel="stylesheet">
+
+    <title>Manage Subjects</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #f8f9fa;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+        }
+
+        .header img {
+            width: 100%;
+            height: auto;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 200px;
+            height: 100%;
+            background-color: #222;
+            color: #fff;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 10px;
+            color: #fff;
+            text-decoration: none;
+            margin-bottom: 10px;
+        }
+
+        .main {
+            margin-left: 220px;
+            padding: 20px;
+        }
+
+        .main form {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .main input, .main select {
+            flex: 1 0 100%;
+            margin: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .main button {
+            margin: 10px;
+            padding: 10px;
+            border: none;
+            background-color: #3498db;
+            color: #fff;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+<div class="sidebar">
+    <a href="#">Admin</a>
+    <a href="/admin">Dashboard</a>
+    <a href="/collegeDetails">College Details</a>
+    <a href="/discipline">Discipline</a>
+    <a href="/branches">Branches</a>
+    <a href="/subjects">Subjects</a>
+    <a href="/faculty">Faculty</a>
+    <a href="/mapping">Mapping</a>
+    <a href="/server">Server</a>
+    <a href="/accessing">New Access</a>
+    <a href="#">Report</a>
+</div>
+
+<div class="main">
+    <h1>Manage Subjects</h1>
+    <form action="/subjects/add" method="POST">
+        <label for="discipline_id">Discipline</label>
+        <select id="discipline_id" name="discipline_id">
+            <% disciplines.forEach(discipline => { %>
+                <option value="<%= discipline.id %>"><%= discipline.name %></option>
+            <% }) %>
+        </select>
+
+        <label for="branch_id">Branch</label>
+        <select id="branch_id" name="branch_id">
+            <% branches.forEach(branch => { %>
+                <option value="<%= branch.id %>"><%= branch.branch_name %></option>
+            <% }) %>
+        </select>
+
+        <label for="subject_name">Subject Name</label>
+        <input type="text" id="subject_name" name="subject_name" required>
+
+        <button type="submit">Add Subject</button>
+    </form>
+
+    <h2>Subjects List</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Discipline</th>
+                <th>Branch</th>
+                <th>Subject</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% subjects.forEach(subject => { %>
+                <tr>
+                    <td><%= subject.discipline_name %></td>
+                    <td><%= subject.branch_name %></td>
+                    <td><%= subject.subject_name %></td>
+                    <td>
+                        <form action="/subjects/delete/<%= subject.id %>" method="POST" style="display:inline;">
+                            <button type="submit">Delete</button>
+                        </form>
+                        <a href="/subjects/edit/<%= subject.id %>">Edit</a>
+                    </td>
+                </tr>
+            <% }) %>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

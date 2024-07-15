@@ -78,14 +78,25 @@ export default class UserController {
             else{
               res.send("You have already filled the feedback");
             }
-            } else {
+            } else if(user.role == "faculty") {
               const uniqueid=user.uniqueid;
               const feedbacks=await this.feedbackRepo.fetchfeedback(uniqueid);
               console.log(feedbacks);
               return res.render("dashboard",{feedbacks});
             }
+            else if(user.role == "admin"){
+              return res.render("collegeDetails");
+            }
     });
    
+
+    //(id, name, pass)
+    //const query =SELECT * from user
+   // where user.uniqueid= id 
+
+   
+
+
     // passport.use(
     //   new LocalStrategy(async (uniqueid, password, done) => {
     //     console.log(uniqueid);
