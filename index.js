@@ -257,25 +257,12 @@ app.get('/collegeDetails', (req, res) => {
 app.get('/admin', (req, res) => {
   res.render('admin.ejs'); 
 });
-app.get('/subjects', (req, res) => {
-  res.render('subjects.ejs'); 
-});
-app.get('/mapping', (req, res) => {
-  res.render('mapping.ejs'); 
-});
-app.get('/server', (req, res) => {
-  res.render('server.ejs'); 
-});
-app.get('/faculty', (req, res) => {
-  res.render('faculty.ejs'); 
-});
+
+
 
 app.get('/accessing', (req, res) => {
   res.render('accessing.ejs'); 
-});
-app.get('/branches', (req, res) => {
-  res.render('branches.ejs'); 
-});
+})
 
 app.post("/signup", async(req, res) => { 
   const db= getDB();
@@ -308,11 +295,11 @@ app.get('/subjects', async (req, res) => {
   const db = getDB();
   try {
     const disciplinesResult = await db.query('SELECT * FROM discipline');
-    const branchesResult = await db.query("SELECT * FROM branch_sub WHERE type = 'branch'");
+    const branchesResult = await db.query("SELECT * FROM branch_subject WHERE type = 'branch'");
     const subjectsResult = await db.query(`
-      SELECT s.id, s.subject_name, d.name AS discipline_name, b.branch_name
-      FROM subjects s
-      JOIN branch_sub b ON s.branch_id = b.id
+       SELECT s.id, s.subject_name, d.name AS discipline_name, b.branch_name
+      FROM subjectnew s
+      JOIN branch_subject b ON s.branch_id = b.id
       JOIN discipline d ON b.discipline_id = d.id
     `);
     res.render('subjects', {
@@ -330,7 +317,7 @@ app.post('/subjects/add', async (req, res) => {
   const db = getDB();
   const { discipline_id, branch_id, subject_name } = req.body;
   try {
-    await db.query('INSERT INTO subjects (discipline_id, branch_id, subject_name) VALUES ($1, $2, $3)', [discipline_id, branch_id, subject_name]);
+    await db.query('INSERT INTO subjectnew (discipline_id, branch_id, subject_name) VALUES ($1, $2, $3)', [discipline_id, branch_id, subject_name]);
     res.redirect('/subjects');
   } catch (err) {
     console.error(err);
@@ -342,7 +329,7 @@ app.post('/subjects/delete/:id', async (req, res) => {
   const db = getDB();
   const id = req.params.id;
   try {
-    await db.query('DELETE FROM subjects WHERE id = $1', [id]);
+    await db.query('DELETE FROM subjectnew WHERE id = $1', [id]);
     res.redirect('/subjects');
   } catch (err) {
     console.error(err);
@@ -354,10 +341,10 @@ app.get('/subjects/edit/:id', async (req, res) => {
   const db = getDB();
   const id = req.params.id;
   try {
-    const subjectResult = await db.query('SELECT * FROM subjects WHERE id = $1', [id]);
+    const subjectResult = await db.query('SELECT * FROM subjectnew WHERE id = $1', [id]);
     const subject = subjectResult.rows[0];
     const disciplinesResult = await db.query('SELECT * FROM discipline');
-    const branchesResult = await db.query("SELECT * FROM branch_sub WHERE type = 'branch'");
+    const branchesResult = await db.query("SELECT * FROM branch_subject WHERE type = 'branch'");
     
     res.render('edit_subject', {
       subject,
@@ -375,7 +362,7 @@ app.post('/subjects/edit/:id', async (req, res) => {
   const id = req.params.id;
   const { discipline_id, branch_id, subject_name } = req.body;
   try {
-    await db.query('UPDATE subjects SET discipline_id = $1, branch_id = $2, subject_name = $3 WHERE id = $4', [discipline_id, branch_id, subject_name, id]);
+    await db.query('UPDATE subjectnew SET discipline_id = $1, branch_id = $2, subject_name = $3 WHERE id = $4', [discipline_id, branch_id, subject_name, id]);
     res.redirect('/subjects');
   } catch (err) {
     console.error(err);
@@ -450,7 +437,12 @@ app.post('/discipline/edit/:id', async (req, res) => {
 
 //For branches
 // Route to display the branches page
+
+
+
 app.get('/branches', async (req, res) => {
+
+  console.log("1");
   const db = getDB();
   try {
     const disciplinesResult = await db.query('SELECT * FROM discipline');
@@ -458,6 +450,7 @@ app.get('/branches', async (req, res) => {
     const semestersResult = await db.query("SELECT s.*, d.name AS discipline_name FROM branch_subject s JOIN discipline d ON s.discipline_id = d.id WHERE s.type = 'semester'");
     const sectionsResult = await db.query("SELECT s.*, d.name AS discipline_name FROM branch_subject s JOIN discipline d ON s.discipline_id = d.id WHERE s.type = 'section'");
 
+    console.log(disciplinesResult.rows);
     console.log('Disciplines:', disciplinesResult.rows);
     console.log('Branches:', branchesResult.rows);
     console.log('Semesters:', semestersResult.rows);
@@ -481,7 +474,7 @@ app.post('/branches/add-branch', async (req, res) => {
   const db=getDB();
   const { discipline_id, branch_name } = req.body;
   try {
-    await db.query('INSERT INTO branch_sub (discipline_id, type, branch_name) VALUES ($1, $2, $3)', [discipline_id, 'branch', branch_name]);
+    await db.query('INSERT INTO branch_subject (discipline_id, type, branch_name) VALUES ($1, $2, $3)', [discipline_id, 'branch', branch_name]);
     res.redirect('/branches');
   } catch (err) {
     console.error(err);
@@ -494,7 +487,7 @@ app.post('/branches/add-semester', async (req, res) => {
   const db=getDB();
   const { discipline_id, branch_name, year, num_semesters } = req.body;
   try {
-    await db.query('INSERT INTO branch_sub (discipline_id, type, branch_name, year, num_semesters) VALUES ($1, $2, $3, $4, $5)', [discipline_id, 'semester', branch_name, year, num_semesters]);
+    await db.query('INSERT INTO branch_subject (discipline_id, type, branch_name, year, num_semesters) VALUES ($1, $2, $3, $4, $5)', [discipline_id, 'semester', branch_name, year, num_semesters]);
     res.redirect('/branches');
   } catch (err) {
     console.error(err);
@@ -507,7 +500,7 @@ app.post('/branches/add-section', async (req, res) => {
   const db=getDB();
   const { discipline_id, branch_name, year, section_name } = req.body;
   try {
-    await db.query('INSERT INTO branch_sub (discipline_id, type, branch_name, year, section_name) VALUES ($1, $2, $3, $4, $5)', [discipline_id, 'section', branch_name, year, section_name]);
+    await db.query('INSERT INTO branch_subject (discipline_id, type, branch_name, year, section_name) VALUES ($1, $2, $3, $4, $5)', [discipline_id, 'section', branch_name, year, section_name]);
     res.redirect('/branches');
   } catch (err) {
     console.error(err);
@@ -520,7 +513,7 @@ app.post('/branches/delete/:id', async (req, res) => {
   const db=getDB();
   const id = req.params.id;
   try {
-    await db.query('DELETE FROM branch_sub WHERE id = $1', [id]);
+    await db.query('DELETE FROM branch_subject WHERE id = $1', [id]);
     res.redirect('/branches');
   } catch (err) {
     console.error(err);
@@ -533,7 +526,7 @@ app.post('/branches/delete-semester/:id', async (req, res) => {
   const db=getDB();
   const id = req.params.id;
   try {
-    await db.query('DELETE FROM branch_sub WHERE id = $1', [id]);
+    await db.query('DELETE FROM branch_subject WHERE id = $1', [id]);
     res.redirect('/branches');
   } catch (err) {
     console.error(err);
@@ -546,7 +539,7 @@ app.post('/branches/delete-section/:id', async (req, res) => {
   const db=getDB();
   const id = req.params.id;
   try {
-    await db.query('DELETE FROM branch_sub WHERE id = $1', [id]);
+    await db.query('DELETE FROM branch_subject WHERE id = $1', [id]);
     res.redirect('/branches');
   } catch (err) {
     console.error(err);
@@ -604,7 +597,7 @@ app.get('/faculty/edit/:id', async (req, res) => {
   const id = req.params.id;
   try {
     const facultyResult = await db.query('SELECT * FROM faculty WHERE id = $1', [id]);
-    const branchesResult = await db.query('SELECT branch_name FROM branch_sub WHERE type = $1', ['branch']);
+    const branchesResult = await db.query('SELECT branch_name FROM branch_subject WHERE type = $1', ['branch']);
     res.render('editFaculty', { faculty: facultyResult.rows[0], branches: branchesResult.rows });
   } catch (err) {
     console.error(err);
@@ -624,6 +617,89 @@ app.post('/faculty/edit/:id', async (req, res) => {
     res.send("Error " + err);
   }
 });
+
+
+
+//mapping
+app.get('/mapping', async (req, res) => {
+  const db=getDB();
+  try {
+    const branchesResult = await db.query('SELECT branch_name FROM branch_subject WHERE type = $1', ['branch']);
+    const { rows: subjectSemesterMappings } = await db.query(
+      'SELECT bs.id AS mapping_id, d.name AS discipline_name, bs.year, s.subject_name AS subject_name, f.id ' +
+      'FROM branch_subject bs ' +
+      'JOIN faculty f ON f.branch = bs.branch_name '+
+      'JOIN subjectnew s ON bs.discipline_id = s.discipline_id ' +
+      'JOIN discipline d ON bs.discipline_id = d.id'
+    );
+    
+
+    const { rows: disciplines } = await db.query(
+      'SELECT * FROM discipline'
+    );
+
+    const { rows: subjects } = await db.query(
+      'SELECT * FROM subjectnew'
+    );
+
+    const { rows: faculties } = await db.query(
+      'SELECT * FROM faculty'
+    );
+    const { rows: facultySubjectMappings } = await db.query(
+      'SELECT s.subject_name AS subject_name, f.name AS faculty_name ' +
+      'FROM subjectnew s ' +
+      'JOIN faculty f ON s.branch_id = f.branch_id'
+    );
+
+    res.render('mapping', {
+      subjectSemesterMappings,
+      disciplines,
+      subjects,
+      faculties,
+      branches:branchesResult.rows,
+      facultySubjectMappings,
+    });
+  } catch (err) {
+    console.error('Error fetching mappings', err);
+    res.status(500).send('Error fetching mappings');
+  }
+});
+
+// Handle subject to semester mapping
+app.post('/mapping', async (req, res) => {
+  const { discipline, branch, year, semester, subject } = req.body;
+
+  try {
+    await db.query(
+      'INSERT INTO branch_subject (discipline_id, branch_id, year, semester, subject_id) VALUES ($1, $2, $3, $4, $5)',
+      [discipline, branch, year, semester, subject]
+    );
+    console.log('Subject to semester mapping added successfully');
+    res.redirect('/mapping');
+  } catch (err) {
+    console.error('Error adding subject to semester mapping', err);
+    res.status(500).send('Error adding subject to semester mapping');
+  }
+});
+
+// Handle faculty to subject mapping
+app.post('/mapping/faculty', async (req, res) => {
+  const { subject_id, faculty_id } = req.body;
+
+  try {
+    await db.query(
+      'UPDATE subjectnew SET faculty_id = $1 WHERE id = $2',
+      [faculty_id, subject_id]
+    );
+    console.log('Faculty to subject mapping added successfully');
+    res.redirect('/mapping');
+  } catch (err) {
+    console.error('Error adding faculty to subject mapping', err);
+    res.status(500).send('Error adding faculty to subject mapping');
+  }
+});
+
+
 
 //server
 

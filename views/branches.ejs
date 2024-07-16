@@ -56,8 +56,32 @@
         }
 
         .main {
-            margin-left: 220px; /* Adjust margin-left to account for the width of the sidebar */
-            padding: 20px; /* Add some padding for better spacing */
+            margin-left: 220px;
+            padding: 20px;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ccc;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+
+        .tab.active {
+            border-bottom: 2px solid #3498db;
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
         }
 
         .main form {
@@ -65,7 +89,7 @@
             flex-wrap: wrap;
         }
 
-        .main input {
+        .main input, .main select {
             flex: 1 0 100%;
             margin: 10px;
             padding: 10px;
@@ -97,27 +121,56 @@
         .list-item button {
             margin-left: 10px;
         }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table th, table td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+
+        table th {
+            background-color: #f2f2f2;
+        }
+
+        table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        table tr:hover {
+            background-color: #f1f1f1;
+        }
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <a href="#">Admin</a>
-        <a href="/admin">Dashboard</a>
-        <a href="/collegeDetails">College Details</a>
-        <a href="/discipline">Discipline</a>
-        <a href="/branches">Branches</a>
-        <a href="/subjects">Subjects</a>
-        <a href="/faculty">Faculty</a>
-        <a href="/mapping">Mapping</a>
-        <a href="/server">Server</a>
-        <a href="/accessing">New Access</a>
-        <a href="#">Report</a>
+<div class="sidebar">
+    <a href="#">Admin</a>
+    <a href="/admin">Dashboard</a>
+    <a href="/collegeDetails">College Details</a>
+    <a href="/discipline">Discipline</a>
+    <a href="/branches">Branches</a>
+    <a href="/subjects">Subjects</a>
+    <a href="/faculty">Faculty</a>
+    <a href="/mapping">Mapping</a>
+    <a href="/server">Server</a>
+    <a href="/accessing">New Access</a>
+    <a href="#">Report</a>
+</div>
+
+<div class="main">
+    <div class="tabs">
+        <div class="tab active" data-tab="branch">Add Branch</div>
+        <div class="tab" data-tab="semester">Add Semesters</div>
+        <div class="tab" data-tab="section">Add Sections</div>
     </div>
 
-    <div class="main">
-        <h1>Branches</h1>
-
-        <h2>Add Branch</h2>
+    <div id="branch" class="tab-content active">
+        <h1>Add Branch</h1>
         <form action="/branches/add-branch" method="post">
             <label for="discipline_id">Discipline</label>
             <select id="discipline_id" name="discipline_id">
@@ -132,21 +185,39 @@
 
         <div class="branch-list">
             <h2>Branches</h2>
-            <% if (branches.length > 0) { %>
-                <% branches.forEach(branch => { %>
-                    <div class="list-item">
-                        <span><%= branch.discipline_name %> - <%= branch.branch_name %></span>
-                        <form action="/branches/delete/<%= branch.id %>" method="post" style="display:inline;">
-                            <button type="submit" class="btn btn-danger">Delete</button>
-                        </form>
-                    </div>
-                <% }) %>
-            <% } else { %>
-                <p>No branches available.</p>
-            <% } %>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Discipline</th>
+                        <th>Branch Name</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (branches.length > 0) { %>
+                        <% branches.forEach(branch => { %>
+                            <tr>
+                                <td><%= branch.discipline_name %></td>
+                                <td><%= branch.branch_name %></td>
+                                <td>
+                                    <form action="/branches/delete/<%= branch.id %>" method="post" style="display:inline;">
+                                        <button type="submit" class="btn btn-danger">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="3">No branches available.</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
         </div>
+    </div>
 
-        <h2>Add Semester</h2>
+    <div id="semester" class="tab-content">
+        <h1>Add Semester</h1>
         <form action="/branches/add-semester" method="post">
             <label for="discipline_id">Discipline</label>
             <select id="discipline_id" name="discipline_id">
@@ -169,21 +240,43 @@
 
         <div class="semester-list">
             <h2>Semesters</h2>
-            <% if (semesters.length > 0) { %>
-                <% semesters.forEach(semester => { %>
-                    <div class="list-item">
-                        <span><%= semester.discipline_name %> - <%= semester.branch_name %> - Year <%= semester.year %> - <%= semester.num_semesters %> Semesters</span>
-                        <form action="/branches/delete-semester/<%= semester.id %>" method="post" style="display:inline;">
-                            <button type="submit" class="btn btn-danger">Delete</button>
-                        </form>
-                    </div>
-                <% }) %>
-            <% } else { %>
-                <p>No semesters available.</p>
-            <% } %>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Discipline</th>
+                        <th>Branch Name</th>
+                        <th>Year</th>
+                        <th>Number of Semesters</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (semesters.length > 0) { %>
+                        <% semesters.forEach(semester => { %>
+                            <tr>
+                                <td><%= semester.discipline_name %></td>
+                                <td><%= semester.branch_name %></td>
+                                <td><%= semester.year %></td>
+                                <td><%= semester.num_semesters %></td>
+                                <td>
+                                    <form action="/branches/delete-semester/<%= semester.id %>" method="post" style="display:inline;">
+                                        <button type="submit" class="btn btn-danger">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="5">No semesters available.</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
         </div>
+    </div>
 
-        <h2>Add Section</h2>
+    <div id="section" class="tab-content">
+        <h1>Add Section</h1>
         <form action="/branches/add-section" method="post">
             <label for="discipline_id">Discipline</label>
             <select id="discipline_id" name="discipline_id">
@@ -206,19 +299,52 @@
 
         <div class="section-list">
             <h2>Sections</h2>
-            <% if (sections.length > 0) { %>
-                <% sections.forEach(section => { %>
-                    <div class="list-item">
-                        <span><%= section.discipline_name %> - <%= section.branch_name %> - Year <%= section.year %> - Section <%= section.section_name %></span>
-                        <form action="/branches/delete-section/<%= section.id %>" method="post" style="display:inline;">
-                            <button type="submit" class="btn btn-danger">Delete</button>
-                        </form>
-                    </div>
-                <% }) %>
-            <% } else { %>
-                <p>No sections available.</p>
-            <% } %>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Discipline</th>
+                        <th>Branch Name</th>
+                        <th>Year</th>
+                        <th>Section Name</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (sections.length > 0) { %>
+                        <% sections.forEach(section => { %>
+                            <tr>
+                                <td><%= section.discipline_name %></td>
+                                <td><%= section.branch_name %></td>
+                                <td><%= section.year %></td>
+                                <td><%= section.section_name %></td>
+                                <td>
+                                    <form action="/branches/delete-section/<%= section.id %>" method="post" style="display:inline;">
+                                        <button type="submit" class="btn btn-danger">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="5">No sections available.</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
         </div>
     </div>
+</div>
+
+<script>
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            this.classList.add('active');
+            document.getElementById(this.getAttribute('data-tab')).classList.add('active');
+        });
+    });
+</script>
 </body>
 </html>

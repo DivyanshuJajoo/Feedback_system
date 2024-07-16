@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
@@ -14,101 +14,280 @@
 
     <style>
         body {
-   font-family: Arial, sans-serif;
-   margin: 0;
-   padding: 0;
-   color: #333;
-}
-
-.header {
-   position: fixed;
-   top: 0;
-   left: 0;
-   width: 100%;
-   background-color: #f8f9fa;
-   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-   z-index: 100;
-}
-
-.header img {
-   width: 100%;
-   height: auto;
-}
-
-.sidebar {
-           position: fixed;
-           top: 0;
-           left: 0;
-           width: 200px;
-           height: 100%;
-           background-color: #222;
-           color: #fff;
-           padding: 10px;
-           box-sizing: border-box;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background-color: #f8f9fa;
         }
-        
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #ffffff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+            padding: 10px 20px;
+        }
+
+        .header img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 200px;
+            height: 100%;
+            background-color: #222;
+            color: #fff;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
         .sidebar a {
-           display: block;
-           padding: 10px;
-           color: #fff;
-           text-decoration: none;
-           margin-bottom: 10px;
+            display: block;
+            padding: 10px;
+            color: #fff;
+            text-decoration: none;
+            margin-bottom: 10px;
         }
-        
+
         .main {
-           margin-left: 220px; /* Adjust margin-left to account for the width of the sidebar */
-           padding: 20px; /* Add some padding for better spacing */
+            margin-left: 200px; /* Adjusted to match sidebar width */
+            padding: 20px;
         }
 
+        .main h1, .main h2 {
+            margin-top: 0;
+        }
 
-.main form {
-   display: flex;
-   flex-wrap: wrap;
-}
+        .main form {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
 
-.main input {
-   flex: 1 0 100%;
-   margin: 10px;
-   padding: 10px;
-   border: 1px solid #ccc;
-   border-radius: 4px;
-}
+        .main form label {
+            font-weight: bold;
+        }
 
-.main button {
-   margin: 10px;
-   padding: 10px;
-   border: none;
-   background-color: #3498db;
-   color: #fff;
-   border-radius: 4px;
-}
+        .main form select, .main form input[type="text"] {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
 
-</style>
+        .main button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #007bff; /* Bootstrap primary color */
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .main button:hover {
+            background-color: #0056b3; /* Darker shade of primary color */
+        }
+
+        .main table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .main table th, .main table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .main table th {
+            background-color: #f2f2f2;
+        }
+
+        .main table a {
+            color: #007bff;
+            text-decoration: none;
+            margin-right: 10px;
+        }
+
+        .main table a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
 <body>
-   <div class="sidebar">
-      <a href="#">Admin</a>
-      <a href="/admin">Dashboard</a>
-      <a href="/collegeDetails">College Details</a>
-      <a href="/discipline">Discipline</a>
-      <a href="/branches">Branches</a>
-      <a href="/subjects">Subjects</a>
-      <a href="/faculty">Faculty</a>
-      <a href="/mapping">Mapping</a>
-      <a href="/server">Server</a>
-      <a href="/accessing">New Access</a>
-      <a href="#">Report</a>
-    </div>
-  
-   <div class="main">
-       <h1>College Details</h1>
-       <form>
-           <label for="college_name">College Name*</label>
-           <input type="text" id="college_name" name="college_name">
-           <label for="course_details">Course Details*</label>
-           <input type="text" id="course_details" name="course_details">
-           <button type="submit">Submit</button>
-        </form>
-    </div>
-    
- </body>
- </html>
+
+<div class="sidebar">
+    <a href="#">Admin</a>
+    <a href="/admin">Dashboard</a>
+    <a href="/collegeDetails">College Details</a>
+    <a href="/discipline">Discipline</a>
+    <a href="/branches">Branches</a>
+    <a href="/subjects">Subjects</a>
+    <a href="/faculty">Faculty</a>
+    <a href="/mapping">Mapping</a>
+    <a href="/server">Server</a>
+    <a href="/accessing">New Access</a>
+    <a href="#">Report</a>
+</div>
+
+<div class="main">
+    <h1>Subject to Semester Mapping</h1>
+    <form id="subjectSemesterForm" action="/mapping" method="POST">
+        <div style="display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+            <label for="discipline">Discipline:</label>
+            <select id="discipline" name="discipline">
+                <!-- Populate options dynamically from database -->
+                <% disciplines.forEach(discipline => { %>
+                    <option value="<%= discipline.id %>"><%= discipline.name %></option>
+                <% }); %>
+            </select>
+
+            <label for="branch">Branch:</label>
+            <select id="branch" name="branch">
+                <!-- Populate options dynamically from database -->
+                <% branches.forEach(branch => { %>
+                    <option value="<%= branch.id %>"><%= branch.name %></option>
+                <% }); %>
+            </select>
+
+            <label for="year">Year:</label>
+            <select id="year" name="year">
+                <!-- Hardcoded example; replace with your actual data or fetch dynamically -->
+                <option value="1">1st Year</option>
+                <option value="2">2nd Year</option>
+                <option value="3">3rd Year</option>
+                <option value="4">4th Year</option>
+            </select>
+
+            <label for="semester">Semester:</label>
+            <select id="semester" name="semester">
+                <!-- Hardcoded example; replace with your actual data or fetch dynamically -->
+                <option value="1">1st Semester</option>
+                <option value="2">2nd Semester</option>
+            </select>
+
+            <label for="subject">Subject:</label>
+            <select id="subject" name="subject">
+                <!-- Populate options dynamically from database -->
+                <% subjects.forEach(subject => { %>
+                    <option value="<%= subject.id %>"><%= subject.name %></option>
+                <% }); %>
+            </select>
+        </div>
+
+        <button type="submit">Map Subject to Semester</button>
+    </form>
+
+    <h2>Subject to Semester Mapping Table</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>Subject</th>
+            <th>Semester</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- Populate table rows dynamically from database -->
+        <% subjectSemesterMappings.forEach(mapping => { %>
+            <tr>
+                <td><%= mapping.subjectName %></td>
+                <td><%= mapping.semester %></td>
+                <td><a href="#">Edit</a> | <a href="#">Delete</a></td>
+            </tr>
+        <% }); %>
+        </tbody>
+    </table>
+
+    <h1>Faculty to Subject Mapping</h1>
+    <form id="facultySubjectForm" action="/mapping/faculty" method="POST">
+        <div style="display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+            <label for="discipline">Discipline:</label>
+            <select id="discipline" name="discipline">
+                <!-- Populate options dynamically from database -->
+                <% disciplines.forEach(discipline => { %>
+                    <option value="<%= discipline.id %>"><%= discipline.name %></option>
+                <% }); %>
+            </select>
+
+            <label for="branch">Branch:</label>
+            <select id="branch" name="branch">
+                <!-- Populate options dynamically from database -->
+                <% branches.forEach(branch => { %>
+                    <option value="<%= branch.id %>"><%= branch.name %></option>
+                <% }); %>
+            </select>
+
+            <label for="year">Year:</label>
+            <select id="year" name="year">
+                <!-- Hardcoded example; replace with your actual data or fetch dynamically -->
+                <option value="1">1st Year</option>
+                <option value="2">2nd Year</option>
+                <option value="3">3rd Year</option>
+                <option value="4">4th Year</option>
+            </select>
+
+            <label for="semester">Semester:</label>
+            <select id="semester" name="semester">
+                <!-- Hardcoded example; replace with your actual data or fetch dynamically -->
+                <option value="1">1st Semester</option>
+                <option value="2">2nd Semester</option>
+            </select>
+
+            <label for="faculty">Faculty:</label>
+            <select id="faculty" name="faculty">
+                <!-- Populate options dynamically from database -->
+                <% faculties.forEach(faculty => { %>
+                    <option value="<%= faculty.id %>"><%= faculty.name %></option>
+                <% }); %>
+            </select>
+
+            <label for="subject">Subject:</label>
+            <select id="subject" name="subject">
+                <!-- Populate options dynamically from database -->
+                <% subjects.forEach(subject => { %>
+                    <option value="<%= subject.id %>"><%= subject.name %></option>
+                <% }); %>
+            </select>
+        </div>
+
+        <button type="submit">Map Faculty to Subject</button>
+    </form>
+
+    <h2>Faculty to Subject Mapping Table</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>Faculty</th>
+            <th>Subject</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- Populate table rows dynamically from database -->
+        <% facultySubjectMappings.forEach(mapping => { %>
+            <tr>
+                <td><%= mapping.facultyName %></td>
+                <td><%= mapping.subjectName %></td>
+                <td><a href="#">Edit</a> | <a href="#">Delete</a></td>
+            </tr>
+        <% }); %>
+        </tbody>
+    </table>
+</div>
+
+<script src="/assets/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
