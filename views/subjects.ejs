@@ -112,6 +112,7 @@
         <div class="form-group">
             <label for="discipline_id">Discipline</label>
             <select id="discipline_id" name="discipline_id" class="form-control">
+                <option value="">Select Discipline</option>
                 <% disciplines.forEach(discipline => { %>
                     <option value="<%= discipline.id %>"><%= discipline.name %></option>
                 <% }) %>
@@ -121,8 +122,9 @@
         <div class="form-group">
             <label for="branch_id">Branch</label>
             <select id="branch_id" name="branch_id" class="form-control">
+                <option value="">Select Branch</option>
                 <% branches.forEach(branch => { %>
-                    <option value="<%= branch.id %>"><%= branch.branch_name %></option>
+                    <option value="<%= branch.branch_id %>" data-discipline="<%= branch.discipline_id %>"><%= branch.branch_name %></option>
                 <% }) %>
             </select>
         </div>
@@ -150,17 +152,35 @@
                 <tr>
                     <td><%= subject.discipline_name %></td>
                     <td><%= subject.branch_name %></td>
-                    <td><%= subject.subject_name %></td>
+                    <td><%= subject.name %></td>
                     <td class="table-actions">
-                        <form action="/subjects/delete/<%= subject.id %>" method="POST">
+                        <form action="/subjects/delete/<%= subject.subject_id %>" method="POST" style="display:inline;">
                             <button type="submit" class="btn btn-danger">Delete</button>
                         </form>
-                        <a href="/subjects/edit/<%= subject.id %>" class="btn btn-secondary">Edit</a>
+                        <a href="/subjects/edit/<%= subject.subject_id %>" class="btn btn-secondary">Edit</a>
                     </td>
                 </tr>
             <% }) %>
         </tbody>
     </table>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#discipline_id').on('change', function () {
+            var selectedDiscipline = $(this).val();
+            $('#branch_id option').each(function () {
+                var branchDisciplineId = $(this).data('discipline');
+                if (selectedDiscipline === "" || branchDisciplineId == selectedDiscipline) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+            $('#branch_id').val('');
+        });
+    });
+</script>
 </body>
 </html>

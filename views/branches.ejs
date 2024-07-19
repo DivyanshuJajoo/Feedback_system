@@ -106,7 +106,7 @@
             border-radius: 4px;
         }
 
-        .branch-list, .semester-list, .section-list {
+        .branch-list {
             margin-top: 20px;
         }
 
@@ -165,8 +165,6 @@
 <div class="main">
     <div class="tabs">
         <div class="tab active" data-tab="branch">Add Branch</div>
-        <div class="tab" data-tab="semester">Add Semesters</div>
-        <div class="tab" data-tab="section">Add Sections</div>
     </div>
 
     <div id="branch" class="tab-content active">
@@ -200,7 +198,7 @@
                                 <td><%= branch.discipline_name %></td>
                                 <td><%= branch.branch_name %></td>
                                 <td>
-                                    <form action="/branches/delete/<%= branch.id %>" method="post" style="display:inline;">
+                                    <form action="/branches/delete/<%= branch.branch_id %>" method="post" style="display:inline;">
                                         <button type="submit" class="btn btn-danger">Delete</button>
                                     </form>
                                 </td>
@@ -209,124 +207,6 @@
                     <% } else { %>
                         <tr>
                             <td colspan="3">No branches available.</td>
-                        </tr>
-                    <% } %>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <div id="semester" class="tab-content">
-        <h1>Add Semester</h1>
-        <form action="/branches/add-semester" method="post">
-            <label for="discipline_id">Discipline</label>
-            <select id="discipline_id" name="discipline_id">
-                <% disciplines.forEach(discipline => { %>
-                    <option value="<%= discipline.id %>"><%= discipline.name %></option>
-                <% }) %>
-            </select>
-            <label for="branch_name">Branch Name</label>
-            <select id="branch_name" name="branch_name">
-                <% branches.forEach(branch => { %>
-                    <option value="<%= branch.branch_name %>"><%= branch.branch_name %></option>
-                <% }) %>
-            </select>
-            <label for="year">Year</label>
-            <input type="number" id="year" name="year" required>
-            <label for="num_semesters">Number of Semesters</label>
-            <input type="number" id="num_semesters" name="num_semesters" required>
-            <button type="submit">Add Semester</button>
-        </form>
-
-        <div class="semester-list">
-            <h2>Semesters</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Discipline</th>
-                        <th>Branch Name</th>
-                        <th>Year</th>
-                        <th>Number of Semesters</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% if (semesters.length > 0) { %>
-                        <% semesters.forEach(semester => { %>
-                            <tr>
-                                <td><%= semester.discipline_name %></td>
-                                <td><%= semester.branch_name %></td>
-                                <td><%= semester.year %></td>
-                                <td><%= semester.num_semesters %></td>
-                                <td>
-                                    <form action="/branches/delete-semester/<%= semester.id %>" method="post" style="display:inline;">
-                                        <button type="submit" class="btn btn-danger">Delete</button>
-                                    </form>
-                                </td>
-                            </tr>
-                        <% }) %>
-                    <% } else { %>
-                        <tr>
-                            <td colspan="5">No semesters available.</td>
-                        </tr>
-                    <% } %>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <div id="section" class="tab-content">
-        <h1>Add Section</h1>
-        <form action="/branches/add-section" method="post">
-            <label for="discipline_id">Discipline</label>
-            <select id="discipline_id" name="discipline_id">
-                <% disciplines.forEach(discipline => { %>
-                    <option value="<%= discipline.id %>"><%= discipline.name %></option>
-                <% }) %>
-            </select>
-            <label for="branch_name">Branch Name</label>
-            <select id="branch_name" name="branch_name">
-                <% branches.forEach(branch => { %>
-                    <option value="<%= branch.branch_name %>"><%= branch.branch_name %></option>
-                <% }) %>
-            </select>
-            <label for="year">Year</label>
-            <input type="number" id="year" name="year" required>
-            <label for="section_name">Section Name</label>
-            <input type="text" id="section_name" name="section_name">
-            <button type="submit">Add Section</button>
-        </form>
-
-        <div class="section-list">
-            <h2>Sections</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Discipline</th>
-                        <th>Branch Name</th>
-                        <th>Year</th>
-                        <th>Section Name</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% if (sections.length > 0) { %>
-                        <% sections.forEach(section => { %>
-                            <tr>
-                                <td><%= section.discipline_name %></td>
-                                <td><%= section.branch_name %></td>
-                                <td><%= section.year %></td>
-                                <td><%= section.section_name %></td>
-                                <td>
-                                    <form action="/branches/delete-section/<%= section.id %>" method="post" style="display:inline;">
-                                        <button type="submit" class="btn btn-danger">Delete</button>
-                                    </form>
-                                </td>
-                            </tr>
-                        <% }) %>
-                    <% } else { %>
-                        <tr>
-                            <td colspan="5">No sections available.</td>
                         </tr>
                     <% } %>
                 </tbody>

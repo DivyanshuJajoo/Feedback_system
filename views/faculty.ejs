@@ -151,10 +151,19 @@
             <label for="phone">Phone*</label>
             <input type="tel" id="phone" name="phone" required>
 
+            <label for="discipline">Discipline*</label>
+            <select id="discipline_id" name="discipline_id" class="form-control">
+                <option value="">Select Discipline</option>
+                <% disciplines.forEach(discipline => { %>
+                    <option value="<%= discipline.id %>"><%= discipline.name %></option>
+                <% }) %>
+            </select>
+
             <label for="branch">Branch*</label>
-            <select id="branch" name="branch" required>
+            <select id="branch_id" name="branch_id" class="form-control">
+                <option value="">Select Branch</option>
                 <% branches.forEach(branch => { %>
-                    <option value="<%= branch.branch_name %>"><%= branch.branch_name %></option>
+                    <option value="<%= branch.branch_id %>" data-discipline="<%= branch.discipline_id %>"><%= branch.branch_name %></option>
                 <% }) %>
             </select>
 
@@ -169,7 +178,7 @@
                         <th>Name</th>
                         <th>Email</th>
                         <th>Phone</th>
-                        <th>Branch</th>
+                        <th>Branch ID</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -180,7 +189,7 @@
                             <td><%= faculty.name %></td>
                             <td><%= faculty.email %></td>
                             <td><%= faculty.phone %></td>
-                            <td><%= faculty.branch %></td>
+                            <td><%= faculty.branch_id %></td>
                             <td>
                                 <form action="/faculty/delete/<%= faculty.id %>" method="POST" style="display: inline;">
                                     <button type="submit" class="btn btn-danger btn-sm">Delete</button>
@@ -195,5 +204,23 @@
             </table>
         </div>
     </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#discipline_id').on('change', function () {
+            var selectedDiscipline = $(this).val();
+            $('#branch_id option').each(function () {
+                var branchDisciplineId = $(this).data('discipline');
+                if (selectedDiscipline === "" || branchDisciplineId == selectedDiscipline) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+            $('#branch_id').val('');
+        });
+    });
+</script>
 </body>
 </html>

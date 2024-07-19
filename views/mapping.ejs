@@ -45,8 +45,10 @@
             height: 100%;
             background-color: #222;
             color: #fff;
-            padding: 10px;
+            padding: 20px;
             box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
         }
 
         .sidebar a {
@@ -55,15 +57,56 @@
             color: #fff;
             text-decoration: none;
             margin-bottom: 10px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: #575757;
         }
 
         .main {
-            margin-left: 200px; /* Adjusted to match sidebar width */
+            margin-left: 220px;
             padding: 20px;
         }
 
         .main h1, .main h2 {
             margin-top: 0;
+        }
+
+        .slider {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        .slider button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+            font-size: 16px;
+        }
+
+        .slider button.active {
+            background-color: #0056b3;
+        }
+
+        .slider button:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
         }
 
         .main form {
@@ -74,29 +117,37 @@
 
         .main form label {
             font-weight: bold;
+            margin-bottom: 5px;
         }
 
-        .main form select, .main form input[type="text"] {
+        .main form select, .main form input[type="text"], .main form input[type="number"] {
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
             width: 100%;
             box-sizing: border-box;
             font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .main form select:focus, .main form input[type="text"]:focus, .main form input[type="number"]:focus {
+            border-color: #007bff;
+            outline: none;
         }
 
         .main button {
             padding: 10px 20px;
             border: none;
-            background-color: #007bff; /* Bootstrap primary color */
+            background-color: #007bff;
             color: #fff;
             border-radius: 4px;
             cursor: pointer;
             transition: background-color 0.3s;
+            font-size: 16px;
         }
 
         .main button:hover {
-            background-color: #0056b3; /* Darker shade of primary color */
+            background-color: #0056b3;
         }
 
         .main table {
@@ -107,12 +158,13 @@
 
         .main table th, .main table td {
             border: 1px solid #ddd;
-            padding: 8px;
+            padding: 12px;
             text-align: left;
         }
 
         .main table th {
             background-color: #f2f2f2;
+            font-weight: bold;
         }
 
         .main table a {
@@ -143,151 +195,248 @@
 </div>
 
 <div class="main">
-    <h1>Subject to Semester Mapping</h1>
-    <form id="subjectSemesterForm" action="/mapping" method="POST">
-        <div style="display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
-            <label for="discipline">Discipline:</label>
-            <select id="discipline" name="discipline">
-                <!-- Populate options dynamically from database -->
-                <% disciplines.forEach(discipline => { %>
-                    <option value="<%= discipline.id %>"><%= discipline.name %></option>
-                <% }); %>
-            </select>
+    <div class="slider">
+        <button id="semesterMappingBtn" class="active">Subject to Semester Mapping</button>
+        <button id="facultyMappingBtn">Faculty to Subject Mapping</button>
+    </div>
 
-            <label for="branch">Branch:</label>
-            <select id="branch" name="branch">
-                <!-- Populate options dynamically from database -->
-                <% branches.forEach(branch => { %>
-                    <option value="<%= branch.id %>"><%= branch.name %></option>
-                <% }); %>
-            </select>
+    <div id="semesterMapping" class="tab-content active">
+        <h1>Subject to Semester Mapping</h1>
+        <form id="subjectSemesterForm" action="/mapping/subjectSemester" method="POST">
+            <div style="display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                <label for="discipline">Discipline:</label>
+                <select id="discipline" name="discipline" required>
+                    <% disciplines.forEach(discipline => { %>
+                        <option value="<%= discipline.id %>"><%= discipline.name %></option>
+                    <% }); %>
+                </select>
 
-            <label for="year">Year:</label>
-            <select id="year" name="year">
-                <!-- Hardcoded example; replace with your actual data or fetch dynamically -->
-                <option value="1">1st Year</option>
-                <option value="2">2nd Year</option>
-                <option value="3">3rd Year</option>
-                <option value="4">4th Year</option>
-            </select>
+                <label for="branch">Branch:</label>
+                <select id="branch" name="branch" required>
+                    <!-- Options will be populated dynamically -->
+                </select>
 
-            <label for="semester">Semester:</label>
-            <select id="semester" name="semester">
-                <!-- Hardcoded example; replace with your actual data or fetch dynamically -->
-                <option value="1">1st Semester</option>
-                <option value="2">2nd Semester</option>
-            </select>
+                <label for="year">Year:</label>
+                <select id="year" name="year" required>
+                    <!-- Options will be populated dynamically based on discipline duration -->
+                </select>
 
-            <label for="subject">Subject:</label>
-            <select id="subject" name="subject">
-                <!-- Populate options dynamically from database -->
-                <% subjects.forEach(subject => { %>
-                    <option value="<%= subject.id %>"><%= subject.name %></option>
-                <% }); %>
-            </select>
-        </div>
+                <label for="semester">Semester:</label>
+                <input type="number" id="semester" name="semester" min="1" required>
 
-        <button type="submit">Map Subject to Semester</button>
-    </form>
+                <label for="subject">Subject:</label>
+                <select id="subject" name="subject" required>
+                    <!-- Options will be populated dynamically -->
+                </select>
+            </div>
 
-    <h2>Subject to Semester Mapping Table</h2>
-    <table>
-        <thead>
-        <tr>
-            <th>Subject</th>
-            <th>Semester</th>
-            <th>Action</th>
-        </tr>
-        </thead>
-        <tbody>
-        <!-- Populate table rows dynamically from database -->
-        <% subjectSemesterMappings.forEach(mapping => { %>
+            <button type="submit">Map Subject to Semester</button>
+        </form>
+
+        <h2>Subject to Semester Mapping Table</h2>
+        <table>
+            <thead>
             <tr>
-                <td><%= mapping.subjectName %></td>
-                <td><%= mapping.semester %></td>
-                <td><a href="#">Edit</a> | <a href="#">Delete</a></td>
+                <th>Subject</th>
+                <th>Semester</th>
+                <th>Action</th>
             </tr>
-        <% }); %>
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+            <% subjectSemesterMappings.forEach(mapping => { %>
+                <tr>
+                    <td><%= mapping.subjectname %></td>
+                    <td><%= mapping.semester %></td>
+                    <td><a href="#" class="delete-btn" data-id="<%= mapping.id %>">Delete</a></td>
+                </tr>
+            <% }); %>
+            </tbody>
+        </table>
+    </div>
 
-    <h1>Faculty to Subject Mapping</h1>
-    <form id="facultySubjectForm" action="/mapping/faculty" method="POST">
-        <div style="display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
-            <label for="discipline">Discipline:</label>
-            <select id="discipline" name="discipline">
-                <!-- Populate options dynamically from database -->
-                <% disciplines.forEach(discipline => { %>
-                    <option value="<%= discipline.id %>"><%= discipline.name %></option>
-                <% }); %>
-            </select>
+    <div id="facultyMapping" class="tab-content">
+        <h1>Faculty to Subject Mapping</h1>
+        <form id="facultySubjectForm" action="/mapping/facultySubject" method="POST">
+            <div style="display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                <label for="discipline2">Discipline:</label>
+                <select id="discipline2" name="discipline" required>
+                    <% disciplines.forEach(discipline => { %>
+                        <option value="<%= discipline.id %>"><%= discipline.name %></option>
+                    <% }); %>
+                </select>
 
-            <label for="branch">Branch:</label>
-            <select id="branch" name="branch">
-                <!-- Populate options dynamically from database -->
-                <% branches.forEach(branch => { %>
-                    <option value="<%= branch.id %>"><%= branch.name %></option>
-                <% }); %>
-            </select>
+                <label for="branch2">Branch:</label>
+                <select id="branch2" name="branch" required>
+                    <!-- Options will be populated dynamically -->
+                </select>
 
-            <label for="year">Year:</label>
-            <select id="year" name="year">
-                <!-- Hardcoded example; replace with your actual data or fetch dynamically -->
-                <option value="1">1st Year</option>
-                <option value="2">2nd Year</option>
-                <option value="3">3rd Year</option>
-                <option value="4">4th Year</option>
-            </select>
+                <label for="faculty">Faculty:</label>
+                <select id="faculty" name="faculty" required>
+                    <!-- Options will be populated dynamically -->
+                </select>
 
-            <label for="semester">Semester:</label>
-            <select id="semester" name="semester">
-                <!-- Hardcoded example; replace with your actual data or fetch dynamically -->
-                <option value="1">1st Semester</option>
-                <option value="2">2nd Semester</option>
-            </select>
+                <label for="subject2">Subject:</label>
+                <select id="subject2" name="subject" required>
+                    <!-- Options will be populated dynamically -->
+                </select>
 
-            <label for="faculty">Faculty:</label>
-            <select id="faculty" name="faculty">
-                <!-- Populate options dynamically from database -->
-                <% faculties.forEach(faculty => { %>
-                    <option value="<%= faculty.id %>"><%= faculty.name %></option>
-                <% }); %>
-            </select>
+                <label for="section">Section:</label>
+                <input type="text" id="section" name="section" maxlength="1" required>
+            </div>
 
-            <label for="subject">Subject:</label>
-            <select id="subject" name="subject">
-                <!-- Populate options dynamically from database -->
-                <% subjects.forEach(subject => { %>
-                    <option value="<%= subject.id %>"><%= subject.name %></option>
-                <% }); %>
-            </select>
-        </div>
+            <button type="submit">Map Faculty to Subject</button>
+        </form>
 
-        <button type="submit">Map Faculty to Subject</button>
-    </form>
-
-    <h2>Faculty to Subject Mapping Table</h2>
-    <table>
-        <thead>
-        <tr>
-            <th>Faculty</th>
-            <th>Subject</th>
-            <th>Action</th>
-        </tr>
-        </thead>
-        <tbody>
-        <!-- Populate table rows dynamically from database -->
-        <% facultySubjectMappings.forEach(mapping => { %>
+        <h2>Faculty to Subject Mapping Table</h2>
+        <table>
+            <thead>
             <tr>
-                <td><%= mapping.facultyName %></td>
-                <td><%= mapping.subjectName %></td>
-                <td><a href="#">Edit</a> | <a href="#">Delete</a></td>
+                <th>Faculty</th>
+                <th>Subject</th>
+                <th>Action</th>
             </tr>
-        <% }); %>
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+            <% facultySubjectMappings.forEach(mapping => { %>
+                <tr>
+                    <td><%= mapping.facultyname %></td>
+                    <td><%= mapping.subjectname %></td>
+                    <td><a href="#" class="delete-btn" data-id="<%= mapping.id %>">Delete</a></td>
+                </tr>
+            <% }); %>
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <script src="/assets/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const semesterMappingBtn = document.getElementById('semesterMappingBtn');
+        const facultyMappingBtn = document.getElementById('facultyMappingBtn');
+        const semesterMapping = document.getElementById('semesterMapping');
+        const facultyMapping = document.getElementById('facultyMapping');
+
+        semesterMappingBtn.addEventListener('click', function () {
+            semesterMapping.classList.add('active');
+            facultyMapping.classList.remove('active');
+            semesterMappingBtn.classList.add('active');
+            facultyMappingBtn.classList.remove('active');
+        });
+
+        facultyMappingBtn.addEventListener('click', function () {
+            facultyMapping.classList.add('active');
+            semesterMapping.classList.remove('active');
+            facultyMappingBtn.classList.add('active');
+            semesterMappingBtn.classList.remove('active');
+        });
+
+        const disciplineSelect = document.getElementById('discipline');
+        const branchSelect = document.getElementById('branch');
+        const subjectSelect = document.getElementById('subject');
+        const yearSelect = document.getElementById('year');
+
+        disciplineSelect.addEventListener('change', function () {
+            fetch(`/api/branches/${this.value}`)
+                .then(response => response.json())
+                .then(data => {
+                    branchSelect.innerHTML = '<option value="">Select Branch</option>';
+                    data.forEach(branch => {
+                        branchSelect.innerHTML += `<option value="${branch.branch_id}">${branch.branch_name}</option>`;
+                    });
+                });
+
+            fetch(`/api/discipline/${this.value}/duration`)
+                .then(response => response.json())
+                .then(data => {
+                    yearSelect.innerHTML = '<option value="">Select Year</option>';
+                    for (let i = 1; i <= data.duration; i++) {
+                        yearSelect.innerHTML += `<option value="${i}">${i}</option>`;
+                    }
+                });
+        });
+
+        branchSelect.addEventListener('change', function () {
+            fetch(`/api/subjects/${this.value}`)
+                .then(response => response.json())
+                .then(data => {
+                    subjectSelect.innerHTML = '<option value="">Select Subject</option>';
+                    data.forEach(subject => {
+                        subjectSelect.innerHTML += `<option value="${subject.subject_id}">${subject.name}</option>`;
+                    });
+                });
+        });
+
+        // Faculty Mapping Section
+        const disciplineSelect2 = document.getElementById('discipline2');
+        const branchSelect2 = document.getElementById('branch2');
+        const subjectSelect2 = document.getElementById('subject2');
+        const facultySelect = document.getElementById('faculty');
+
+        disciplineSelect2.addEventListener('change', function () {
+            // Clear the branch and faculty selects when discipline changes
+            branchSelect2.innerHTML = '<option value="">Select Branch</option>';
+            facultySelect.innerHTML = '<option value="">Select Faculty</option>';
+            
+            fetch(`/api/branches/${this.value}`)
+                .then(response => response.json())
+                .then(data => {
+                    branchSelect2.innerHTML = '<option value="">Select Branch</option>';
+                    data.forEach(branch => {
+                        branchSelect2.innerHTML += `<option value="${branch.branch_id}">${branch.branch_name}</option>`;
+                    });
+                });
+        });
+
+        branchSelect2.addEventListener('change', function () {
+            // Fetch and populate subjects based on branch_id
+            fetch(`/api/subjects/${this.value}`)
+                .then(response => response.json())
+                .then(data => {
+                    subjectSelect2.innerHTML = '<option value="">Select Subject</option>';
+                    data.forEach(subject => {
+                        subjectSelect2.innerHTML += `<option value="${subject.subject_id}">${subject.name}</option>`;
+                    });
+                });
+
+            // Fetch and populate faculty based on branch_id
+            fetch(`/api/faculty/${this.value}`)
+                .then(response => response.json())
+                .then(data => {
+                    facultySelect.innerHTML = '<option value="">Select Faculty</option>';
+                    data.forEach(faculty => {
+                        facultySelect.innerHTML += `<option value="${faculty.id}">${faculty.name}</option>`;
+                    });
+                });
+        });
+
+        document.querySelectorAll('.delete-btn').forEach(button => {
+            button.addEventListener('click', function (event) {
+                event.preventDefault();
+                const id = this.getAttribute('data-id');
+                if (confirm('Are you sure you want to delete this item?')) {
+                    fetch(`/api/mapping/delete/${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            alert('Item deleted successfully.');
+                            location.reload();
+                        } else {
+                            alert('Failed to delete item.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+                }
+            });
+        });
+    });
+</script>
+
 </body>
 </html>

@@ -111,12 +111,12 @@
         <label for="branch_id">Branch</label>
         <select id="branch_id" name="branch_id">
             <% branches.forEach(branch => { %>
-                <option value="<%= branch.id %>" <%= subject.branch_id === branch.id ? 'selected' : '' %>><%= branch.branch_name %></option>
+                <option value="<%= branch.branch_id %>" <%= subject.branch_id === branch.id ? 'selected' : '' %>><%= branch.branch_name %></option>
             <% }) %>
         </select>
 
         <label for="subject_name">Subject Name</label>
-        <input type="text" id="subject_name" name="subject_name" value="<%= subject.subject_name %>" required>
+        <input type="text" id="subject_name" name="subject_name" value="<%= subject.name %>" required>
 
         <button type="submit">Update Subject</button>
     </form>
