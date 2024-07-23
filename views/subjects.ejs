@@ -18,6 +18,7 @@
             margin: 0;
             padding: 0;
             color: #333;
+            background-color: #f8f9fa;
         }
 
         .sidebar {
@@ -38,6 +39,11 @@
             color: #fff;
             text-decoration: none;
             margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .sidebar a:hover {
+            background-color: #495057;
         }
 
         .main {
@@ -45,12 +51,32 @@
             padding: 20px;
         }
 
-        .form-control {
+        .form-control, .btn {
             margin-bottom: 15px;
         }
 
-        .btn-primary {
+        .btn-primary, .btn-secondary, .btn-danger {
             margin-right: 10px;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+        }
+
+        .card {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
         table {
@@ -74,7 +100,7 @@
         }
 
         tr:hover {
-            background-color: #ddd;
+            background-color: #e9ecef;
         }
 
         .table-actions {
@@ -108,61 +134,76 @@
 
 <div class="main">
     <h1>Manage Subjects</h1>
-    <form action="/subjects/add" method="POST" class="form">
-        <div class="form-group">
-            <label for="discipline_id">Discipline</label>
-            <select id="discipline_id" name="discipline_id" class="form-control">
-                <option value="">Select Discipline</option>
-                <% disciplines.forEach(discipline => { %>
-                    <option value="<%= discipline.id %>"><%= discipline.name %></option>
-                <% }) %>
-            </select>
-        </div>
+    <div class="card">
+        <form action="/subjects/add" method="POST">
+            <div class="form-group">
+                <label for="discipline_id">Discipline</label>
+                <select id="discipline_id" name="discipline_id" class="form-control">
+                    <option value="">Select Discipline</option>
+                    <% disciplines.forEach(discipline => { %>
+                        <option value="<%= discipline.id %>"><%= discipline.name %></option>
+                    <% }) %>
+                </select>
+            </div>
 
-        <div class="form-group">
-            <label for="branch_id">Branch</label>
-            <select id="branch_id" name="branch_id" class="form-control">
-                <option value="">Select Branch</option>
-                <% branches.forEach(branch => { %>
-                    <option value="<%= branch.branch_id %>" data-discipline="<%= branch.discipline_id %>"><%= branch.branch_name %></option>
-                <% }) %>
-            </select>
-        </div>
+            <div class="form-group">
+                <label for="branch_id">Branch</label>
+                <select id="branch_id" name="branch_id" class="form-control">
+                    <option value="">Select Branch</option>
+                    <% branches.forEach(branch => { %>
+                        <option value="<%= branch.branch_id %>" data-discipline="<%= branch.discipline_id %>"><%= branch.branch_name %></option>
+                    <% }) %>
+                </select>
+            </div>
 
-        <div class="form-group">
-            <label for="subject_name">Subject Name</label>
-            <input type="text" id="subject_name" name="subject_name" class="form-control" required>
-        </div>
+            <div class="form-group">
+                <label for="subject_name">Subject Name</label>
+                <input type="text" id="subject_name" name="subject_name" class="form-control" required>
+            </div>
 
-        <button type="submit" class="btn btn-primary">Add Subject</button>
-    </form>
+            <button type="submit" class="btn btn-primary">Add Subject</button>
+        </form>
+    </div>
 
-    <h2>Subjects List</h2>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Discipline</th>
-                <th>Branch</th>
-                <th>Subject</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            <% subjects.forEach(subject => { %>
+    <div class="card">
+        <h2>Upload Subjects via Excel</h2>
+        <form action="/subjects/upload" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="subjectFile">Upload Subject Excel File:</label>
+                <input type="file" id="subjectFile" name="subjectFile" class="form-control-file" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Upload</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>Subjects List</h2>
+        <table class="table">
+            <thead>
                 <tr>
-                    <td><%= subject.discipline_name %></td>
-                    <td><%= subject.branch_name %></td>
-                    <td><%= subject.name %></td>
-                    <td class="table-actions">
-                        <form action="/subjects/delete/<%= subject.subject_id %>" method="POST" style="display:inline;">
-                            <button type="submit" class="btn btn-danger">Delete</button>
-                        </form>
-                        <a href="/subjects/edit/<%= subject.subject_id %>" class="btn btn-secondary">Edit</a>
-                    </td>
+                    <th>Discipline</th>
+                    <th>Branch</th>
+                    <th>Subject</th>
+                    <th>Actions</th>
                 </tr>
-            <% }) %>
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                <% subjects.forEach(subject => { %>
+                    <tr>
+                        <td><%= subject.discipline_name %></td>
+                        <td><%= subject.branch_name %></td>
+                        <td><%= subject.name %></td>
+                        <td class="table-actions">
+                            <form action="/subjects/delete/<%= subject.subject_id %>" method="POST" style="display:inline;">
+                                <button type="submit" class="btn btn-danger">Delete</button>
+                            </form>
+                            <a href="/subjects/edit/<%= subject.subject_id %>" class="btn btn-secondary">Edit</a>
+                        </td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

@@ -22,6 +22,19 @@ const saltRounds=10;
 app.set('view engine', 'ejs');
 app.use(express.static("public"));
 
+import multer from "multer"
+import xlsx from "xlsx";
+const upload = multer({ dest: 'uploads/' });
+import fs from "fs";
+import fileUpload from "express-fileupload";
+import path from "path";
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+app.use(fileUpload());
+
 
 /////passport
 
@@ -400,6 +413,58 @@ app.post('/subjects/edit/:id', async (req, res) => {
   }
 });
 
+app.post('/subjects/upload', async (req, res) => {
+  const db=getDB();
+  if (!req.files || Object.keys(req.files).length === 0) {
+    return res.status(400).send('No files were uploaded.');
+  }
+
+  const subjectFile = req.files.subjectFile;
+  const uploadPath = path.join(__dirname, 'uploads', subjectFile.name);
+
+  // Use the mv() method to place the file somewhere on your server
+  subjectFile.mv(uploadPath, async (err) => {
+    if (err) {
+      return res.status(500).send(err);
+    }
+
+    try {
+      const workbook = xlsx.readFile(uploadPath);
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      const data = xlsx.utils.sheet_to_json(sheet);
+
+      // Process data and insert into the database
+      for (const row of data) {
+        const { name, discipline_name, branch_name } = row;
+
+        // Get discipline ID from discipline name
+        const disciplineResult = await db.query('SELECT id FROM discipline WHERE name = $1', [discipline_name]);
+        const discipline = disciplineResult.rows[0];
+
+        // Get branch ID from branch name and discipline ID
+        const branchResult = await db.query('SELECT branch_id FROM branchnew WHERE branch_name = $1 AND discipline_id = $2', [branch_name, discipline.id]);
+        const branch = branchResult.rows[0];
+
+        if (discipline && branch) {
+          // Insert subject into the database
+          await db.query('INSERT INTO subjectnew (name,  discipline_id, branch_id) VALUES ($1, $2, $3)', [name,  discipline.id, branch.branch_id]);
+        } else {
+          console.error(`Discipline or Branch not found for subject: ${name}`);
+        }
+      }
+
+      // Delete the uploaded file after processing
+      fs.unlinkSync(uploadPath);
+
+      res.redirect('/subjects');
+    } catch (err) {
+      console.error(err);
+      res.status(500).send('Error processing the file: ' + err.message);
+    }
+  });
+});
+
 
 
 
@@ -561,6 +626,7 @@ app.get('/faculty', async (req, res) => {
 // Route to add a faculty
 app.post('/faculty/add', async (req, res) => {
   const db = getDB();
+  console.log("add faculty:");
   const { faculty_name, email, phone, discipline_id, branch_id } = req.body;
   console.log(branch_id);
   console.log(discipline_id);
@@ -613,6 +679,38 @@ app.get('/faculty/edit/:id', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.send("Error " + err);
+  }
+});
+
+app.post('/faculty/upload', upload.single('file'), async (req, res) => {
+  const db = getDB();
+  const filePath = req.file.path;
+
+  try {
+      // Read and parse the Excel file
+      const workbook = xlsx.readFile(filePath);
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      const data = xlsx.utils.sheet_to_json(sheet);
+
+      // Loop through the parsed data and insert into the database
+      for (const row of data) {
+          const { faculty_name, email, phone, discipline_id, branch_id } = row;
+
+          // Insert faculty data
+          await db.query(
+              'INSERT INTO faculty (name, email, phone, branch_id, discipline_id) VALUES ($1, $2, $3, $4, $5)',
+              [faculty_name, email, phone, branch_id, discipline_id]
+          );
+      }
+
+      // Cleanup: Delete the uploaded file
+      fs.unlinkSync(filePath);
+
+      res.redirect('/faculty');
+  } catch (err) {
+      console.error('Error processing the file:', err);
+      res.send('Error processing the file: ' + err.message);
   }
 });
 

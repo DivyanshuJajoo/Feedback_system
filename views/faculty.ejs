@@ -18,6 +18,7 @@
             margin: 0;
             padding: 0;
             color: #333;
+            background-color: #f8f9fa;
         }
 
         .header {
@@ -53,6 +54,11 @@
             color: #fff;
             text-decoration: none;
             margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .sidebar a:hover {
+            background-color: #495057;
         }
 
         .main {
@@ -60,67 +66,73 @@
             padding: 20px; /* Add some padding for better spacing */
         }
 
-        .main form {
-            display: flex;
-            flex-wrap: wrap;
+        .form-control, .btn {
+            margin-bottom: 15px;
         }
 
-        .main input, .main select {
-            flex: 1 0 100%;
-            margin: 10px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+        .btn-primary, .btn-secondary, .btn-danger, .btn-warning {
+            margin-right: 10px;
         }
 
-        .main button {
-            margin: 10px;
-            padding: 10px;
-            border: none;
-            background-color: #3498db;
-            color: #fff;
-            border-radius: 4px;
+        .btn-primary {
+            background-color: #007bff;
         }
 
-        .table-responsive {
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+        }
+
+        .btn-warning {
+            background-color: #ffc107;
+        }
+
+        .card {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
             margin-top: 20px;
         }
 
-        .table {
-            width: 100%;
-            margin-bottom: 1rem;
-            color: #212529;
-            border-collapse: collapse;
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
         }
 
-        .table th,
-        .table td {
-            padding: 0.75rem;
-            vertical-align: top;
-            border-top: 1px solid #dee2e6;
+        th {
+            background-color: #f8f9fa;
         }
 
-        .table thead th {
-            vertical-align: bottom;
-            border-bottom: 2px solid #dee2e6;
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
         }
 
-        .table tbody + tbody {
-            border-top: 2px solid #dee2e6;
+        tr:hover {
+            background-color: #e9ecef;
         }
 
-        .table-bordered {
-            border: 1px solid #dee2e6;
+        .table-actions {
+            display: flex;
+            align-items: center;
         }
 
-        .table-bordered th,
-        .table-bordered td {
-            border: 1px solid #dee2e6;
+        .table-actions form {
+            margin: 0;
         }
 
-        .table-bordered thead th,
-        .table-bordered thead td {
-            border-bottom-width: 2px;
+        .table-actions a {
+            margin-left: 10px;
         }
     </style>
 </head>
@@ -140,87 +152,105 @@
     </div>
 
     <div class="main">
-        <h1>Add Faculty</h1>
-        <form action="/faculty/add" method="POST">
-            <label for="faculty_name">Name*</label>
-            <input type="text" id="faculty_name" name="faculty_name" required>
+        <div class="card">
+            <h1>Add Faculty</h1>
+            <form action="/faculty/add" method="POST">
+                <div class="form-group">
+                    <label for="faculty_name">Name*</label>
+                    <input type="text" id="faculty_name" name="faculty_name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email*</label>
+                    <input type="email" id="email" name="email" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone*</label>
+                    <input type="tel" id="phone" name="phone" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="discipline">Discipline*</label>
+                    <select id="discipline_id" name="discipline_id" class="form-control">
+                        <option value="">Select Discipline</option>
+                        <% disciplines.forEach(discipline => { %>
+                            <option value="<%= discipline.id %>"><%= discipline.name %></option>
+                        <% }) %>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="branch">Branch*</label>
+                    <select id="branch_id" name="branch_id" class="form-control">
+                        <option value="">Select Branch</option>
+                        <% branches.forEach(branch => { %>
+                            <option value="<%= branch.branch_id %>" data-discipline="<%= branch.discipline_id %>"><%= branch.branch_name %></option>
+                        <% }) %>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Faculty</button>
+            </form>
+        </div>
 
-            <label for="email">Email*</label>
-            <input type="email" id="email" name="email" required>
+        <div class="card">
+            <h1>Upload Faculty Excel File</h1>
+            <form action="/faculty/upload" method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <input type="file" name="file" accept=".xlsx, .xls" class="form-control-file" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Upload</button>
+            </form>
+        </div>
 
-            <label for="phone">Phone*</label>
-            <input type="tel" id="phone" name="phone" required>
-
-            <label for="discipline">Discipline*</label>
-            <select id="discipline_id" name="discipline_id" class="form-control">
-                <option value="">Select Discipline</option>
-                <% disciplines.forEach(discipline => { %>
-                    <option value="<%= discipline.id %>"><%= discipline.name %></option>
-                <% }) %>
-            </select>
-
-            <label for="branch">Branch*</label>
-            <select id="branch_id" name="branch_id" class="form-control">
-                <option value="">Select Branch</option>
-                <% branches.forEach(branch => { %>
-                    <option value="<%= branch.branch_id %>" data-discipline="<%= branch.discipline_id %>"><%= branch.branch_name %></option>
-                <% }) %>
-            </select>
-
-            <button type="submit">Add Faculty</button>
-        </form>
-
-        <div class="table-responsive">
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>S.No</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Branch ID</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% faculties.forEach((faculty, index) => { %>
+        <div class="card">
+            <h1>Faculty List</h1>
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
                         <tr>
-                            <td><%= index + 1 %></td>
-                            <td><%= faculty.name %></td>
-                            <td><%= faculty.email %></td>
-                            <td><%= faculty.phone %></td>
-                            <td><%= faculty.branch_id %></td>
-                            <td>
-                                <form action="/faculty/delete/<%= faculty.id %>" method="POST" style="display: inline;">
-                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                                </form>
-                                <form action="/faculty/edit/<%= faculty.id %>" method="GET" style="display: inline;">
-                                    <button type="submit" class="btn btn-warning btn-sm">Edit</button>
-                                </form>
-                            </td>
+                            <th>S.No</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Branch ID</th>
+                            <th>Actions</th>
                         </tr>
-                    <% }) %>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        <% faculties.forEach((faculty, index) => { %>
+                            <tr>
+                                <td><%= index + 1 %></td>
+                                <td><%= faculty.name %></td>
+                                <td><%= faculty.email %></td>
+                                <td><%= faculty.phone %></td>
+                                <td><%= faculty.branch_id %></td>
+                                <td class="table-actions">
+                                    <form action="/faculty/delete/<%= faculty.id %>" method="POST" style="display: inline;">
+                                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                    </form>
+                                    <a href="/faculty/edit/<%= faculty.id %>" class="btn btn-warning btn-sm">Edit</a>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    $(document).ready(function () {
-        $('#discipline_id').on('change', function () {
-            var selectedDiscipline = $(this).val();
-            $('#branch_id option').each(function () {
-                var branchDisciplineId = $(this).data('discipline');
-                if (selectedDiscipline === "" || branchDisciplineId == selectedDiscipline) {
-                    $(this).show();
-                } else {
-                    $(this).hide();
-                }
+    <script>
+        $(document).ready(function () {
+            $('#discipline_id').on('change', function () {
+                var selectedDiscipline = $(this).val();
+                $('#branch_id option').each(function () {
+                    var branchDisciplineId = $(this).data('discipline');
+                    if (selectedDiscipline === "" || branchDisciplineId == selectedDiscipline) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+                $('#branch_id').val('');
             });
-            $('#branch_id').val('');
         });
-    });
-</script>
+    </script>
 </body>
 </html>
