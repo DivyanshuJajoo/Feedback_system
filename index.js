@@ -222,8 +222,8 @@ if (existingFeedback.rows.length > 0) {
 
   const feedbackQuery = {
     text: `
-      INSERT INTO feedback (fac_id, subject,year,branch,section,q1, q2, q3, q4, q5, q6, q7, q8, q9, q10,responses)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14,$15,$16 )
+      INSERT INTO feedback (fac_id, subject,year,branch,section,q1, q2, q3, q4, q5, q6, q7, q8, q9, q10,responses,feedback_year)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14,$15,$16, EXTRACT(YEAR FROM CURRENT_DATE) )
     `,
     values: [
       feedbackData.fac_id,
@@ -300,14 +300,13 @@ app.post("/signup", async(req, res) => {
 
   // res.render('login')
 });
-
-
 //subjects
 
 app.get('/subjects', async (req, res) => {
   const db = getDB();
   try {
     const disciplinesResult = await db.query('SELECT * FROM discipline');
+    console.log(disciplinesResult);
     const branchesResult = await db.query("SELECT * FROM branchnew");
     const subjectsResult = await db.query(`
        SELECT s.subject_id, s.name, d.name AS discipline_name, b.branch_name
@@ -803,6 +802,7 @@ app.get('/api/faculty/:branchId', async (req, res) => {
 // Route to render the mapping page
 app.get('/mapping', async (req, res) => {
   try {
+    const db = getDB();
       const disciplines = await getDB().query('SELECT id, name FROM discipline');
       const branches = await getDB().query('SELECT branch_id, branch_name FROM branchnew');
       const subjects = await getDB().query('SELECT subject_id, name FROM subjectnew');
@@ -835,27 +835,132 @@ app.get('/mapping', async (req, res) => {
 
 //server
 
-let serverState = 'OFF';
-// Route to display the server control page
-app.get('/server', (req, res) => {
-  
-  res.render('server', { serverState });
-});
 
-// Route to toggle the server state
-app.post('/server/toggle', (req, res) => {
-  serverState = req.body.serverState;
-  res.redirect('/server');
-});
+app.get('/server', async (req, res) => {
 
-// Middleware to check if the server is on for student routes
-app.use((req, res, next) => {
-  if (req.path.startsWith('/feedback') && serverState === 'OFF') {
-    return res.send('The feedback form is currently unavailable.');
+  const db = getDB();
+  try {
+      // Query to get the is_Allowed status for each semester
+      const result = await db.query(`
+          SELECT semester, bool_or(is_allowed) AS is_allowed
+          FROM users
+          GROUP BY semester
+          ORDER BY semester;
+      `);
+
+      // Create an array of states for the semesters (1 to 8)
+      const semesterStates = new Array(8).fill(false);
+      result.rows.forEach(row => {
+          if (row.semester >= 1 && row.semester <= 8) {
+              semesterStates[row.semester - 1] = row.is_allowed;
+          }
+      });
+
+      res.render('server', { semesterStates });
+  } catch (error) {
+      console.error('Error fetching semester states:', error);
+      res.status(500).send('Internal Server Error');
   }
-  next();
 });
 
+// Route to handle the toggle action
+app.post('/server/toggle', async (req, res) => {
+
+  const db = getDB();
+  const semester = parseInt(req.body.semester);
+
+  try {
+      // Get the current state of the selected semester
+      const currentStateResult = await db.query(`
+          SELECT bool_or(is_allowed) AS is_allowed
+          FROM users
+          WHERE semester = $1;
+      `, [semester]);
+
+      const currentState = currentStateResult.rows[0].is_allowed;
+
+      // Toggle the state
+      const newState = !currentState;
+
+      // Update the users table
+      await db.query(`
+          UPDATE users
+          SET is_allowed = $1
+          WHERE semester = $2;
+      `, [newState, semester]);
+
+      res.redirect('/server');
+  } catch (error) {
+      console.error('Error updating server state:', error);
+      res.status(500).send('Internal Server Error');
+  }
+});
+
+
+
+
+
+
+//report
+
+app.get('/report', async (req, res) => {
+  const db = getDB();
+  try {
+    const facultyId = req.query.facultyId || '';
+
+    // Fetch all faculties for the dropdown
+    const facultiesResult = await db.query('SELECT id, name FROM faculty');
+    const faculties = facultiesResult.rows;
+
+    // Construct the query to fetch feedback data including faculty name
+    let feedbackQuery = `
+      SELECT 
+          f.year, 
+          f.section, 
+          f.branch, 
+          fac.name AS faculty_name, 
+          SUM(f.q1) AS q1, 
+          SUM(f.q2) AS q2, 
+          SUM(f.q3) AS q3, 
+          SUM(f.q4) AS q4, 
+          SUM(f.q5) AS q5, 
+          SUM(f.q6) AS q6, 
+          SUM(f.q7) AS q7, 
+          SUM(f.q8) AS q8, 
+          SUM(f.q9) AS q9, 
+          SUM(f.q10) AS q10, 
+          SUM(f.responses) AS responses 
+      FROM feedback f
+      JOIN faculty fac ON f.fac_id = fac.id
+    `;
+
+    let feedbackResult;
+    if (facultyId) {
+        feedbackQuery += ` WHERE f.fac_id = $1 GROUP BY f.year, f.section, f.branch, fac.name ORDER BY f.year, f.section`;
+        feedbackResult = await db.query(feedbackQuery, [facultyId]);
+    } else {
+        feedbackQuery += ` GROUP BY f.year, f.section, f.branch, fac.name ORDER BY f.year, f.section`;
+        feedbackResult = await db.query(feedbackQuery);
+    }
+    // console.log(feedbackQuery.responses); 
+
+    const feedbacks = feedbackResult.rows;
+
+    // Render the report page with the data
+    res.render('report', { faculties, facultyId, feedbacks });
+  } catch (err) {
+    console.error('Error fetching report data:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+
+
+
+
+
+
+//report end
 
 
 app.get('/dashboard', (req, res) => {

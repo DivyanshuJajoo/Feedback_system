@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/assets/css/font-awesome.min.css" rel="stylesheet">
+    <link href="/assets/css/style.css" rel="stylesheet">
+
+    <title>Feedback Report</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 200px;
+            height: 100%;
+            background-color: #222;
+            color: #fff;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 10px;
+            color: #fff;
+            text-decoration: none;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .sidebar a:hover {
+            background-color: #495057;
+        }
+
+        .main {
+            margin-left: 220px; /* Adjust margin-left to account for the width of the sidebar */
+            padding: 20px; /* Add some padding for better spacing */
+        }
+
+        .filter-form {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .filter-form label {
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .filter-form select {
+            margin-right: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            flex-grow: 1;
+        }
+
+        .filter-form button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .card {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+            font-size: 14px;
+            color: #333;
+        }
+
+        th {
+            background-color: #007bff;
+            color: #fff;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 0.05em;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #e9ecef;
+            transition: background-color 0.3s ease;
+        }
+
+        tr td:first-child {
+            border-left: 2px solid #007bff;
+        }
+
+        tr td:last-child {
+            border-right: 2px solid #007bff;
+        }
+
+        td {
+            border-right: 1px solid #ddd;
+        }
+
+        .no-feedback {
+            text-align: center;
+            padding: 20px;
+            background-color: #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <a href="#">Admin</a>
+        <a href="/admin">Dashboard</a>
+        <a href="/collegeDetails">College Details</a>
+        <a href="/discipline">Discipline</a>
+        <a href="/branches">Branches</a>
+        <a href="/subjects">Subjects</a>
+        <a href="/faculty">Faculty</a>
+        <a href="/mapping">Mapping</a>
+        <a href="/server">Server</a>
+        <a href="/report">Report</a>
+    </div>
+
+    <div class="main">
+        <div class="card">
+            <h1>Feedback Report</h1>
+
+            <!-- Filter Form -->
+            <form class="filter-form" action="/report" method="get">
+                <label for="facultyId">Select Faculty:</label>
+                <select name="facultyId" id="facultyId">
+                    <option value="" <%= !facultyId ? 'selected' : '' %>>All Faculties</option>
+                    <% faculties.forEach(faculty => { %>
+                        <option value="<%= faculty.id %>" <%= facultyId && faculty.id.toString() === facultyId.toString() ? 'selected' : '' %>>
+                            <%= faculty.name %>
+                        </option>
+                    <% }) %>
+                </select>
+                <button type="submit">Filter</button>
+            </form>
+
+            <!-- Feedback Table -->
+            <% if (feedbacks.length > 0) { %>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Year</th>
+                            <th>Section</th>
+                            <th>Branch</th>
+                            <th>Faculty Name</th>
+                            <th>Score Q1</th>
+                            <th>Score Q2</th>
+                            <th>Score Q3</th>
+                            <th>Score Q4</th>
+                            <th>Score Q5</th>
+                            <th>Score Q6</th>
+                            <th>Score Q7</th>
+                            <th>Score Q8</th>
+                            <th>Score Q9</th>
+                            <th>Score Q10</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% feedbacks.forEach(feedback => { %>
+                            <tr>
+                                <td><%= feedback.year %></td>
+                                <td><%= feedback.section %></td>
+                                <td><%= feedback.branch %></td>
+                                <td><%= feedback.faculty_name %></td>
+                                <% for (let i = 1; i <= 10; i++) { %>
+                                    <td><%= (feedback['q' + i] && feedback.responses) ? (feedback['q' + i] / feedback.responses).toFixed(2) : 'N/A' %></td>
+                                <% } %>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            <% } else { %>
+                <div class="no-feedback">No feedbacks available.</div>
+            <% } %>
+        </div>
+    </div>
+</body>
+</html>

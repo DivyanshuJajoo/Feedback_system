@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -14,83 +15,151 @@
 
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            color: #333;
-        }
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f7f6;
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
 
-        .header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background-color: #f8f9fa;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            z-index: 100;
-        }
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #343a40;
+    color: #fff;
+    z-index: 100;
+    padding: 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
 
-        .header img {
-            width: 100%;
-            height: auto;
-        }
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 220px;
+    height: 100%;
+    background-color: #222;
+    color: #fff;
+    padding: 20px;
+    box-sizing: border-box;
+    font-size: 16px;
+}
 
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 200px;
-            height: 100%;
-            background-color: #222;
-            color: #fff;
-            padding: 10px;
-            box-sizing: border-box;
-        }
+.sidebar a {
+    display: block;
+    padding: 12px 20px;
+    color: #fff;
+    text-decoration: none;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
 
-        .sidebar a {
-            display: block;
-            padding: 10px;
-            color: #fff;
-            text-decoration: none;
-            margin-bottom: 10px;
-        }
+.sidebar a:hover {
+    background-color: #575757;
+}
 
-        .main {
-            margin-left: 220px; /* Adjust margin-left to account for the width of the sidebar */
-            padding: 20px; /* Add some padding for better spacing */
-        }
+.main {
+    margin-left: 240px; /* Account for sidebar width */
+    padding: 30px;
+    background-color: #fff;
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    margin-top: 60px;
+    max-width: 1000px; /* Adjust width as needed */
+    margin-left: auto;
+    margin-right: auto;
+}
 
-        .main form {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-        }
+.main h1 {
+    font-size: 28px;
+    margin-bottom: 20px;
+    color: #343a40;
+    border-bottom: 2px solid #f4f4f4;
+    padding-bottom: 10px;
+    text-align: center;
+}
 
-        .main button {
-            margin: 10px 0;
-            padding: 10px;
-            border: none;
-            background-color: #3498db;
-            color: #fff;
-            border-radius: 4px;
-            cursor: pointer;
-        }
+.table-container {
+    margin-top: 20px;
+    overflow-x: auto; /* Ensures table is scrollable on smaller screens */
+}
 
-        .main button:disabled {
-            background-color: #ccc;
-        }
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
 
-        .status {
-            margin-top: 20px;
-            font-size: 1.2em;
-        }
+table, th, td {
+    border: 1px solid #ddd;
+}
 
-        .status span {
-            font-weight: bold;
-        }
+th, td {
+    padding: 12px;
+    text-align: center;
+}
+
+th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+}
+
+td button {
+    padding: 8px 12px;
+    border: none;
+    background-color: #007bff;
+    color: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+td button:hover {
+    background-color: #0056b3;
+}
+
+td button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.status {
+    font-size: 1.2em;
+    margin-top: 10px;
+    color: #007bff;
+    font-weight: bold;
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+    }
+
+    .sidebar a {
+        display: inline-block;
+        width: calc(100% - 40px);
+        margin: 5px 0;
+    }
+
+    .main {
+        margin-left: 0;
+        margin-top: 0;
+        padding: 20px;
+    }
+}
+
     </style>
 </head>
+
 <body>
+    
+
     <div class="sidebar">
         <a href="#">Admin</a>
         <a href="/admin">Dashboard</a>
@@ -101,20 +170,40 @@
         <a href="/faculty">Faculty</a>
         <a href="/mapping">Mapping</a>
         <a href="/server">Server</a>
-        <a href="/accessing">New Access</a>
-        <a href="#">Report</a>
+        <a href="/report">Report</a>
     </div>
 
     <div class="main">
         <h1>Server Control</h1>
-        <form action="/server/toggle" method="POST">
-            <button type="submit" name="serverState" value="<%= serverState === 'ON' ? 'OFF' : 'ON' %>">
-                Turn <%= serverState === 'ON' ? 'Off' : 'On' %> Server
-            </button>
-        </form>
-        <div class="status">
-            Server is currently: <span><%= serverState %></span>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Semester</th>
+                        <th>Action</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% for (let i = 1; i <= 8; i++) { %>
+                        <tr>
+                            <td>Semester <%= i %></td>
+                            <td>
+                                <form action="/server/toggle" method="POST">
+                                    <button type="submit" name="semester" value="<%= i %>">
+                                        <%= semesterStates[i - 1] ? 'Turn Off' : 'Turn On' %>
+                                    </button>
+                                </form>
+                            </td>
+                            <td>
+                                <div class="status"><%= semesterStates[i - 1] ? 'ON' : 'OFF' %></div>
+                            </td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
         </div>
     </div>
 </body>
+
 </html>
