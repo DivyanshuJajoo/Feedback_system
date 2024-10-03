@@ -161,6 +161,7 @@
         <a href="/mapping">Mapping</a>
         <a href="/server">Server</a>
         <a href="/report">Report</a>
+        <a href="/logout" class="btn btn-danger">Logout</a>
     </div>
 
     <div class="main">
@@ -178,6 +179,14 @@
                         </option>
                     <% }) %>
                 </select>
+
+                <label for="feedbackYear">Select Year:</label>
+                <select name="feedbackYear" id="feedbackYear">
+                    <option value="2023" <%= feedbackYear == '2023' ? 'selected' : '' %>>2023</option>
+                    <option value="2024" <%= feedbackYear == '2024' ? 'selected' : '' %>>2024</option>
+                    <!-- Add more years as needed -->
+                </select>
+
                 <button type="submit">Filter</button>
             </form>
 

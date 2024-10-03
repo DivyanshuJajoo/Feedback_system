@@ -192,13 +192,15 @@ await db.query(updateUserQuery);
     Q10: facultyFeedback[10],
     responses:1,
   };
+  const currentYear = new Date().getFullYear();
+  console.log(currentYear);
 
   const existingFeedback = await db.query({
     text: `
         SELECT * FROM feedback
-        WHERE fac_id = $1 AND subject = $2 AND year = $3 AND branch = $4 AND section = $5
+        WHERE fac_id = $1 AND subject = $2 AND year = $3 AND branch = $4 AND section = $5 AND Feedback_year = $6
     `,
-    values: [feedbackData.fac_id, feedbackData.subject, feedbackData.year, feedbackData.branch, feedbackData.section]
+    values: [feedbackData.fac_id, feedbackData.subject, feedbackData.year, feedbackData.branch, feedbackData.section, currentYear]
 });
 
 if (existingFeedback.rows.length > 0) {
@@ -223,7 +225,7 @@ if (existingFeedback.rows.length > 0) {
   const feedbackQuery = {
     text: `
       INSERT INTO feedback (fac_id, subject,year,branch,section,q1, q2, q3, q4, q5, q6, q7, q8, q9, q10,responses,feedback_year)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14,$15,$16, EXTRACT(YEAR FROM CURRENT_DATE) )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14,$15,$16,$17)
     `,
     values: [
       feedbackData.fac_id,
@@ -241,7 +243,8 @@ if (existingFeedback.rows.length > 0) {
       feedbackData.Q8,
       feedbackData.Q9,
       feedbackData.Q10,
-      feedbackData.responses
+      feedbackData.responses,
+      currentYear
     ]
   };
   await db.query(feedbackQuery);
@@ -671,10 +674,10 @@ app.get('/faculty/edit/:id', async (req, res) => {
     const disciplines = disciplinesResult.rows;
 
     // Fetch all branches
-    const branchesResult = await db.query('SELECT * FROM branch_sub');
+    const branchesResult = await db.query("SELECT b.*, d.name AS discipline_name FROM branchnew b JOIN discipline d ON b.discipline_id = d.id");
     const branches = branchesResult.rows;
 
-    res.render('faculty_edit', { faculty, disciplines, branches });
+    res.render('editFaculty', { faculty, disciplines, branches });
   } catch (err) {
     console.error(err);
     res.send("Error " + err);
@@ -776,6 +779,50 @@ app.post('/mapping/facultySubject', async (req, res) => {
   const { discipline, branch, year, semester, faculty, subject, section } = req.body;
     await db.query('INSERT INTO subject_faculty (faculty_id, subject_id, section) VALUES ($1, $2, $3)', [faculty, subject, section]);
     res.redirect('/mapping'); // Redirect to mapping page after insertion
+});
+// Delete subject-semester mapping
+app.delete('/api/mapping/subjectSemester/:id', (req, res) => {
+  const mappingId = req.params.id;
+  const db = getDB();
+
+  const query = `
+      UPDATE subject_semester_mapping
+      SET semester = NULL
+      WHERE id = $1
+      RETURNING *  
+  `;
+
+  db.query(query, [mappingId], (error, result) => {
+      if (error) {
+          console.error('Error executing query:', error);
+          return res.status(500).json({ error: 'Failed to remove semester mapping' });
+      }
+
+      if (result.rowCount === 0) {
+          console.warn(`No mapping found with ID: ${mappingId}`);
+          return res.status(404).json({ error: 'Mapping not found' });
+      }
+
+      console.log(`Successfully removed semester mapping with ID: ${mappingId}`);
+      res.status(200).json({ message: 'Semester mapping removed successfully', data: result.rows[0] });
+  });
+});
+
+// Delete faculty-subject mapping
+app.delete('/api/mapping/facultySubject/:id', async (req, res) => {
+  const db = getDB();
+  const mappingId = req.params.id;
+
+  try {
+      const result = await db.query('DELETE FROM subject_faculty WHERE id = $1 RETURNING *', [mappingId]);
+      if (result.rowCount === 0) {
+          return res.status(404).send('Mapping not found');
+      }
+      res.status(200).send({ success: true });
+  } catch (error) {
+      console.error('Error deleting faculty-subject mapping:', error);
+      res.status(500).send('Server error');
+  }
 });
 
 
@@ -905,8 +952,11 @@ app.post('/server/toggle', async (req, res) => {
 
 app.get('/report', async (req, res) => {
   const db = getDB();
+  const currentYear = new Date().getFullYear();
+  console.log(currentYear);
   try {
     const facultyId = req.query.facultyId || '';
+    const feedbackYear = req.query.feedbackYear || currentYear; // Capture feedback year from query
 
     // Fetch all faculties for the dropdown
     const facultiesResult = await db.query('SELECT id, name FROM faculty');
@@ -935,27 +985,73 @@ app.get('/report', async (req, res) => {
     `;
 
     let feedbackResult;
+    const queryParams = [];
+    
+    // Filter by faculty and feedback year if provided
     if (facultyId) {
-        feedbackQuery += ` WHERE f.fac_id = $1 GROUP BY f.year, f.section, f.branch, fac.name ORDER BY f.year, f.section`;
-        feedbackResult = await db.query(feedbackQuery, [facultyId]);
-    } else {
-        feedbackQuery += ` GROUP BY f.year, f.section, f.branch, fac.name ORDER BY f.year, f.section`;
-        feedbackResult = await db.query(feedbackQuery);
+      queryParams.push(facultyId);
+      feedbackQuery += ` WHERE f.fac_id = $${queryParams.length}`;
     }
-    // console.log(feedbackQuery.responses); 
 
+    if (feedbackYear) {
+      queryParams.push(feedbackYear);
+      feedbackQuery += queryParams.length > 1 ? ` AND` : ` WHERE`;
+      feedbackQuery += ` f.feedback_year = $${queryParams.length}`;
+    }
+
+    feedbackQuery += ` GROUP BY f.year, f.section, f.branch, fac.name ORDER BY f.year, f.section`;
+
+    feedbackResult = await db.query(feedbackQuery, queryParams);
+    
     const feedbacks = feedbackResult.rows;
 
     // Render the report page with the data
-    res.render('report', { faculties, facultyId, feedbacks });
+    res.render('report', { faculties, facultyId, feedbackYear, feedbacks });
   } catch (err) {
     console.error('Error fetching report data:', err);
     res.status(500).send('Internal Server Error');
   }
 });
 
+app.use((req, res, next) => {
+  // Disable caching for logged-out users
+  if (!req.isAuthenticated()) {
+    res.set('Cache-Control', 'no-store');
+  }
+  next();
+});
 
+// Logout route
+// Disable caching for authenticated pages
+app.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+  next();
+});
+app.post('/logout', function(req, res, next){
+  req.logout(function(err) {
+    if (err) { return next(err); }
+    res.redirect('/');
+  });
+});
 
+app.get("/logout", (req, res, next) => {
+  req.logout((err) => {
+    if (err) {
+      return next(err);
+    }
+    req.session.destroy((err) => {
+      if (err) {
+        console.log('Error destroying session:', err);
+        return next(err);
+      }
+      // Ensure no back button access to previous session
+      res.clearCookie('connect.sid'); // Optional: Clear session cookie
+      res.redirect("/login");
+    });
+  });
+});
 
 
 

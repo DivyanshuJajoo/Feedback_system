@@ -109,6 +109,15 @@
       <input type="tel" id="phone" name="phone" value="<%= faculty.phone %>" required>
       <label for="branch">Branch:</label>
       <select id="branch" name="branch" required>
+        <div class="form-group">
+                    <label for="discipline">Discipline*</label>
+                    <select id="discipline_id" name="discipline_id" class="form-control">
+                        <option value="">Select Discipline</option>
+                        <% disciplines.forEach(discipline => { %>
+                            <option value="<%= discipline.id %>"><%= discipline.name %></option>
+                        <% }) %>
+                    </select>
+                </div>
         <% branches.forEach(branch => { %>
           <option value="<%= branch.id %>" <%= faculty.branch_id === branch.id ? 'selected' : '' %>><%= branch.name %></option>
         <% }); %>

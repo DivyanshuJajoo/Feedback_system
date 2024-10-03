@@ -148,6 +148,7 @@
         <a href="/mapping">Mapping</a>
         <a href="/server">Server</a>
         <a href="/report">Report</a>
+        <a href="/logout" class="btn btn-danger">Logout</a>
     </div>
 
     <div class="main">
@@ -224,7 +225,7 @@
                                     <form action="/faculty/delete/<%= faculty.id %>" method="POST" style="display: inline;">
                                         <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                                     </form>
-                                    <a href="/faculty/edit/<%= faculty.id %>" class="btn btn-warning btn-sm">Edit</a>
+                                    <!-- <a href="/faculty/edit/<%= faculty.id %>" class="btn btn-warning btn-sm">Edit</a> -->
                                 </td>
                             </tr>
                         <% }) %>
