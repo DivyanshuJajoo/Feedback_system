@@ -27,7 +27,7 @@ export default class subjectRepository {
     const subject_id = subjectRes.rows[0].subject_id;
 
     const facultyQuery = {
-      text: 'SELECT faculty_id FROM subject_faculty WHERE subject_id = $1',
+      text: 'SELECT faculty_id, is_elective FROM subject_faculty WHERE subject_id = $1',
       values: [subject_id]
   };
   const facultyRes = await db.query(facultyQuery);
@@ -37,7 +37,7 @@ export default class subjectRepository {
   }
 
   const faculty_id = facultyRes.rows[0].faculty_id;
-
+  const is_elective = facultyRes.rows[0].is_elective;
         
   const facultyNameQuery = {
     text: 'SELECT name FROM faculty WHERE id = $1',
@@ -55,7 +55,8 @@ const faculty_name = facultyNameRes.rows[0].name;
             subject,
             Assigned_faculty: {
                 id: faculty_id,
-                faculty_name
+                faculty_name,
+                is_elective
             }
         });
         // faculties[subject] = facultiesForSubject;

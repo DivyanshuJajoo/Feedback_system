@@ -170,6 +170,12 @@ await db.query(updateUserQuery);
  for (let i = 0; i <faculties.length; i++) {
   // console.log('inside');
   // const facultyId = req.faculties[i].Assigned_faculty.id;
+  if (parseInt(req.body[`selectedPoint${i}-1`]) === 11) {
+    console.log("doneeee");
+    // Skip this faculty feedback
+    console.log(`Feedback skipped for faculty: ${faculties[i].Assigned_faculty.id}`);
+    continue; // Skip to the next faculty
+}
   const facultyFeedback = {};
   for (let j = 1; j <= 10; j++) {
     facultyFeedback[j] = req.body[`selectedPoint${i}-${j}`];
@@ -249,7 +255,16 @@ if (existingFeedback.rows.length > 0) {
   };
   await db.query(feedbackQuery);
 }
- }
+const remark = req.body[`remark${i}`];
+const responseQuery = {
+  text: `
+    INSERT INTO responses (fac_id, subject, year, branch, section, feedback_year, response)
+    VALUES ($1, $2, $3, $4, $5, $6, $7)
+  `,
+  values: [feedbackData.fac_id, feedbackData.subject, feedbackData.year, feedbackData.branch, feedbackData.section, currentYear, remark]
+};
+await db.query(responseQuery);
+}
 
 res.status(200).send('Feedback submitted successfully.');
 }
@@ -1012,6 +1027,64 @@ app.get('/report', async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
+
+
+
+//teacher remarks
+app.get('/teacher-remarks', async (req, res) => {
+  const db = getDB();
+  const currentYear = new Date().getFullYear();
+
+  try {
+    const facultyId = req.query.facultyId || '';
+    const feedbackYear = req.query.feedbackYear || currentYear;
+
+    // Fetch all faculties for the dropdown
+    const facultiesResult = await db.query('SELECT id, name FROM faculty');
+    const faculties = facultiesResult.rows;
+
+    // Construct the query to fetch remarks data
+    let feedbackQuery = `
+      SELECT 
+          f.year, 
+          f.section, 
+          f.branch, 
+          fac.name AS faculty_name, 
+          f.response 
+      FROM responses f
+      JOIN faculty fac ON f.fac_id = fac.id
+    `;
+
+    const queryParams = [];
+
+    // Filter by faculty and year if provided
+    if (facultyId) {
+      queryParams.push(facultyId);
+      feedbackQuery += ` WHERE f.fac_id = $${queryParams.length}`;
+    }
+
+    if (feedbackYear) {
+      queryParams.push(feedbackYear);
+      feedbackQuery += queryParams.length > 1 ? ` AND` : ` WHERE`;
+      feedbackQuery += ` f.feedback_year = $${queryParams.length}`;
+    }
+
+    feedbackQuery += ` ORDER BY f.year, f.section`;
+
+    const feedbackResult = await db.query(feedbackQuery, queryParams);
+    const feedbacks = feedbackResult.rows;
+    console.log(feedbacks);
+
+    // Render the new teacher-remarks page
+    res.render('teacher-remarks', { faculties, facultyId, feedbackYear, feedbacks });
+  } catch (err) {
+    console.error('Error fetching remarks data:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+
+
 
 app.use((req, res, next) => {
   // Disable caching for logged-out users

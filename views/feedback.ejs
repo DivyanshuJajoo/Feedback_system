@@ -34,6 +34,23 @@
         color: #fff;
         border-color: #007bff;
       }
+      .note {
+        color: #555;
+        font-style: italic;
+        margin-bottom: 10px;
+      }
+      .skip-button {
+        background-color: #6c757d;
+        color: white;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-left: 10px;
+      }
+      .skip-button:hover {
+        background-color: #5a6268;
+      }
     </style>
   </head>
   <body>
@@ -57,6 +74,10 @@
           <label for="faculty<%= index %>"
             >Faculty: <%= Assigned_faculty.faculty_name %></label
           ><br />
+          <% if (Assigned_faculty.is_elective) { %>
+            <p class="note">Note: Skip this subject feedback if you don’t have this subject.</p>
+            <button type="button" class="skip-button" onclick="skipSubject(<%= index %>)">Skip</button>
+          <% } %>
           <% for (let i = 1; i <= 10; i++) { %>
           <h5><%= questionsArray[i-1] %></h5>
           <ul class="bullet-points">
@@ -206,6 +227,26 @@
                       document.getElementById('submitButton').style.display = 'inline';
                   }
               }
+
+
+              function skipSubject(index) {
+    // Hide the current faculty feedback section
+    document.getElementById('faculty' + index).style.display = 'none';
+
+    // Set bullet point values for the skipped faculty to '11' (to indicate a skip)
+    for (let j = 1; j <= 10; j++) {
+        document.getElementsByName(`selectedPoint${index}-${j}`)[0].value = 11;
+    }
+
+    // Check if we are skipping the last faculty
+    if (index === facultiesCount - 1) {
+        // If it's the last faculty, submit the form directly
+        document.getElementById('feedbackForm').submit();
+    } else {
+        // Otherwise, show the next faculty
+        showNextFaculty(index);
+    }
+}
     </script>
   </body>
 </html>

@@ -10,7 +10,7 @@
     <link href="/assets/css/font-awesome.min.css" rel="stylesheet">
     <link href="/assets/css/style.css" rel="stylesheet">
 
-    <title>Feedback Report</title>
+    <title>Teacher Remarks</title>
 
     <style>
         body {
@@ -47,8 +47,8 @@
         }
 
         .main {
-            margin-left: 220px; /* Adjust margin-left to account for the width of the sidebar */
-            padding: 20px; /* Add some padding for better spacing */
+            margin-left: 220px;
+            padding: 20px;
         }
 
         .filter-form {
@@ -127,53 +127,13 @@
             transition: background-color 0.3s ease;
         }
 
-        tr td:first-child {
-            border-left: 2px solid #007bff;
-        }
-
-        tr td:last-child {
-            border-right: 2px solid #007bff;
-        }
-
-        td {
-            border-right: 1px solid #ddd;
-        }
-
-        .no-feedback {
+        .no-remarks {
             text-align: center;
             padding: 20px;
             background-color: #e9ecef;
             border-radius: 8px;
             font-size: 16px;
             color: #666;
-        }
-        .question-section {
-            background-color: #fff;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .question-section h2 {
-            font-size: 20px;
-            font-weight: bold;
-            color: #007bff;
-            margin-bottom: 15px;
-            cursor: pointer;
-        }
-
-        .question-list {
-            list-style-type: decimal;
-            padding-left: 20px;
-            margin: 0;
-            display: none; /* Initially hidden */
-        }
-
-        .question-list li {
-            margin-bottom: 10px;
-            font-size: 16px;
-            color: #333;
         }
     </style>
 </head>
@@ -195,24 +155,10 @@
 
     <div class="main">
         <div class="card">
-            <h1>Feedback Report</h1>
-            <div class="question-section">
-                <h2 onclick="toggleQuestions()">View Feedback Questions</h2>
-                <ul id="question-list" class="question-list">
-                    <li>1.How would you rate the clarity of the instructor's explanations?</li>
-                    <li>2.Did the instructor effectively engage with the students?</li>
-                    <li>3.Were the course materials organized and easy to follow?</li>
-                    <li>4.Did the instructor provide helpful feedback on assignments?</li>
-                    <li>5.How approachable was the instructor for questions and assistance?</li>
-                    <li>6.Did the instructor encourage active participation in class discussions?</li>
-                    <li>7.Did the instructor demonstrate a good understanding of the subject matter?</li>
-                    <li>8.Was the pace of the course appropriate for learning?</li>
-                    <li>9.Did the instructor encourage critical thinking and problem-solving?</li>
-                    <li>10.Overall, how satisfied are you with the instructor's teaching?</li>
-                </ul>
-            </div>
+            <h1>Teacher Remarks</h1>
+
             <!-- Filter Form -->
-            <form class="filter-form" action="/report" method="get">
+            <form class="filter-form" action="/teacher-remarks" method="get">
                 <label for="facultyId">Select Faculty:</label>
                 <select name="facultyId" id="facultyId">
                     <option value="" <%= !facultyId ? 'selected' : '' %>>All Faculties</option>
@@ -233,7 +179,7 @@
                 <button type="submit">Filter</button>
             </form>
 
-            <!-- Feedback Table -->
+            <!-- Feedback Remarks Table -->
             <% if (feedbacks.length > 0) { %>
                 <table>
                     <thead>
@@ -242,16 +188,7 @@
                             <th>Section</th>
                             <th>Branch</th>
                             <th>Faculty Name</th>
-                            <th>Score Q1</th>
-                            <th>Score Q2</th>
-                            <th>Score Q3</th>
-                            <th>Score Q4</th>
-                            <th>Score Q5</th>
-                            <th>Score Q6</th>
-                            <th>Score Q7</th>
-                            <th>Score Q8</th>
-                            <th>Score Q9</th>
-                            <th>Score Q10</th>
+                            <th>Remarks</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -261,23 +198,15 @@
                                 <td><%= feedback.section %></td>
                                 <td><%= feedback.branch %></td>
                                 <td><%= feedback.faculty_name %></td>
-                                <% for (let i = 1; i <= 10; i++) { %>
-                                    <td><%= (feedback['q' + i] && feedback.responses) ? (feedback['q' + i] / feedback.responses).toFixed(2) : 'N/A' %></td>
-                                <% } %>
+                                <td><%= feedback.response || 'No remarks' %></td>
                             </tr>
                         <% }); %>
                     </tbody>
                 </table>
             <% } else { %>
-                <div class="no-feedback">No feedbacks available.</div>
+                <div class="no-remarks">No remarks available.</div>
             <% } %>
         </div>
     </div>
 </body>
-<script>
-    function toggleQuestions() {
-        const questionList = document.getElementById("question-list");
-        questionList.style.display = questionList.style.display === "none" ? "block" : "none";
-    }
-</script>
 </html>
