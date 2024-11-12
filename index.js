@@ -267,6 +267,7 @@ await db.query(responseQuery);
 }
 
 res.status(200).send('Feedback submitted successfully.');
+// res.render('/');
 }
  catch (error) {
 console.error('Error while submitting feedback:', error);
@@ -456,9 +457,12 @@ app.post('/subjects/upload', async (req, res) => {
         const { name, discipline_name, branch_name } = row;
 
         // Get discipline ID from discipline name
+        // console.log(discipline_name);
         const disciplineResult = await db.query('SELECT id FROM discipline WHERE name = $1', [discipline_name]);
+        // console.log(disciplineResult);
         const discipline = disciplineResult.rows[0];
-
+        // console.log("here");
+        // console.log(discipline);
         // Get branch ID from branch name and discipline ID
         const branchResult = await db.query('SELECT branch_id FROM branchnew WHERE branch_name = $1 AND discipline_id = $2', [branch_name, discipline.id]);
         const branch = branchResult.rows[0];
@@ -699,36 +703,63 @@ app.get('/faculty/edit/:id', async (req, res) => {
   }
 });
 
-app.post('/faculty/upload', upload.single('file'), async (req, res) => {
+app.post('/faculty/upload', async (req, res) => {
   const db = getDB();
-  const filePath = req.file.path;
 
-  try {
-      // Read and parse the Excel file
-      const workbook = xlsx.readFile(filePath);
-      const sheetName = workbook.SheetNames[0];
-      const sheet = workbook.Sheets[sheetName];
-      const data = xlsx.utils.sheet_to_json(sheet);
+  // Check if a file was uploaded
+  if (!req.files || Object.keys(req.files).length === 0) {
+      return res.status(400).send('No files were uploaded.');
+  }
 
-      // Loop through the parsed data and insert into the database
-      for (const row of data) {
-          const { faculty_name, email, phone, discipline_id, branch_id } = row;
+  const facultyFile = req.files.facultyFile; // Name should match the input field name in the form
+  const uploadPath = path.join(__dirname, 'uploads', facultyFile.name);
 
-          // Insert faculty data
-          await db.query(
-              'INSERT INTO faculty (name, email, phone, branch_id, discipline_id) VALUES ($1, $2, $3, $4, $5)',
-              [faculty_name, email, phone, branch_id, discipline_id]
-          );
+  // Move the uploaded file to the server's upload folder
+  facultyFile.mv(uploadPath, async (err) => {
+      if (err) {
+          return res.status(500).send(err);
       }
 
-      // Cleanup: Delete the uploaded file
-      fs.unlinkSync(filePath);
+      try {
+          // Read the uploaded Excel file
+          const workbook = xlsx.readFile(uploadPath);
+          const sheetName = workbook.SheetNames[0];
+          const sheet = workbook.Sheets[sheetName];
+          const data = xlsx.utils.sheet_to_json(sheet);
 
-      res.redirect('/faculty');
-  } catch (err) {
-      console.error('Error processing the file:', err);
-      res.send('Error processing the file: ' + err.message);
-  }
+          // Process each row in the file
+          for (const row of data) {
+              const { faculty_name, email, phone, discipline_id, branch_id } = row;
+              // console.log(row); 
+              // Get discipline ID from discipline name
+              const disciplineResult = await db.query('SELECT id FROM discipline WHERE id = $1', [discipline_id]);
+              const discipline = disciplineResult.rows[0];
+              console.log(discipline);
+              // Get branch ID from branch name and discipline ID
+              const branchResult = await db.query('SELECT branch_id FROM branchnew WHERE branch_id = $1 AND discipline_id = $2', [branch_id, discipline?.id]);
+              const branch = branchResult.rows[0];
+            console.log(branch);
+              if (discipline && branch) {
+                  // Insert faculty data into the database
+                  await db.query(
+                      'INSERT INTO faculty (name, email, phone, branch_id, discipline_id) VALUES ($1, $2, $3, $4, $5)',
+                      [faculty_name, email, phone, branch.branch_id, discipline.id]
+                  );
+              } else {
+                  console.error(`Discipline or Branch not found for faculty: ${faculty_name}`);
+              }
+          }
+
+          // Delete the uploaded file after processing
+          fs.unlinkSync(uploadPath);
+
+          // Redirect to the faculty page after success
+          res.redirect('/faculty');
+      } catch (err) {
+          console.error('Error processing the file:', err);
+          res.status(500).send('Error processing the file: ' + err.message);
+      }
+  });
 });
 
 
@@ -823,6 +854,7 @@ app.delete('/api/mapping/subjectSemester/:id', (req, res) => {
   });
 });
 
+
 // Delete faculty-subject mapping
 app.delete('/api/mapping/facultySubject/:id', async (req, res) => {
   const db = getDB();
@@ -837,6 +869,117 @@ app.delete('/api/mapping/facultySubject/:id', async (req, res) => {
   } catch (error) {
       console.error('Error deleting faculty-subject mapping:', error);
       res.status(500).send('Server error');
+  }
+});
+
+
+app.post('/api/mapping/studentSubject', async (req, res) => {
+  const db = getDB();
+
+  // Check if a file was uploaded
+  if (!req.files || Object.keys(req.files).length === 0) {
+    return res.status(400).send('No files were uploaded.');
+  }
+
+  const studentFile = req.files.studentFile; // Name should match the input field name in the form
+  const uploadPath = path.join(__dirname, 'uploads', studentFile.name);
+
+  // Move the uploaded file to the server's upload folder
+  studentFile.mv(uploadPath, async (err) => {
+    if (err) {
+      return res.status(500).send(err);
+    }
+
+    try {
+      // Read the uploaded Excel file
+      const workbook = xlsx.readFile(uploadPath);
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      const data = xlsx.utils.sheet_to_json(sheet);
+
+      // Debugging: log the uploaded data
+      console.log('Uploaded Data:', data);
+
+      // Prepare the data for insertion
+      const studentSubjectData = data.map(item => ({
+        unique_id: item.unique_id,
+        name: item.Name,
+        branch_name: item['Branch Name'],
+        year: item.Year,
+        section: item.Section,
+        discipline_id: item['Discipline ID'],
+        semester: item.Semester,
+        subject_1: item['Subject 1'],
+        subject_2: item['Subject 2'],
+        subject_3: item['Subject 3'],
+        subject_4: item['Subject 4'],
+        subject_5: item['Subject 5']
+      }));
+
+      // Prepare the query and values
+      const query = `
+        INSERT INTO student_subject 
+        (unique_id, name, branch_name, year, section, discipline_id, semester, subject_1, subject_2, subject_3, subject_4, subject_5)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      `;
+
+      // Iterate over the studentSubjectData and insert each row
+      for (const item of studentSubjectData) {
+        const values = [
+          item.unique_id,
+          item.name,
+          item.branch_name,
+          item.year,
+          item.section,
+          item.discipline_id,
+          item.semester,
+          item.subject_1,
+          item.subject_2,
+          item.subject_3,
+          item.subject_4,
+          item.subject_5
+        ];
+
+        // Insert the values into the database
+        await db.query(query, values);
+      }
+
+      // Delete the uploaded file after processing
+      fs.unlinkSync(uploadPath);
+
+      // Send success response
+      res.status(200).send('Student-subject data uploaded successfully.');
+    } catch (err) {
+      console.error('Error processing the file:', err);
+      res.status(500).send('Error processing the file: ' + err.message);
+    }
+  });
+});
+
+// Route to fetch the student-subject mappings for the table
+app.get('/api/mapping/studentSubject', async (req, res) => {
+  try {
+    const result = await db.query('SELECT * FROM student_subject');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching data from database:', error);
+    res.status(500).send('Server error while fetching mappings');
+  }
+});
+
+// Route to delete a student-subject mapping
+app.delete('/api/mapping/studentSubject/:id', async (req, res) => {
+  const mappingId = req.params.id;
+
+  try {
+    const result = await db.query('DELETE FROM student_subject WHERE id = $1 RETURNING *', [mappingId]);
+    if (result.rowCount === 0) {
+      return res.status(404).send('Mapping not found');
+    }
+    res.status(200).send({ success: true });
+  } catch (error) {
+    console.error('Error deleting student-subject mapping:', error);
+    res.status(500).send('Server error');
   }
 });
 
@@ -875,7 +1018,7 @@ app.get('/mapping', async (req, res) => {
           JOIN subjectnew sub ON s.subject_id = sub.subject_id
       `);
       const facultySubjectMappings = await getDB().query(`
-          SELECT f.name as facultyName, s.name as subjectName
+          SELECT f.name as facultyName, s.name as subjectName, sf.section
           FROM subject_faculty sf
           JOIN faculty f ON sf.faculty_id = f.id
           JOIN subjectnew s ON sf.subject_id = s.subject_id
@@ -983,6 +1126,7 @@ app.get('/report', async (req, res) => {
           f.year, 
           f.section, 
           f.branch, 
+          f.subject,
           fac.name AS faculty_name, 
           SUM(f.q1) AS q1, 
           SUM(f.q2) AS q2, 
@@ -1014,7 +1158,7 @@ app.get('/report', async (req, res) => {
       feedbackQuery += ` f.feedback_year = $${queryParams.length}`;
     }
 
-    feedbackQuery += ` GROUP BY f.year, f.section, f.branch, fac.name ORDER BY f.year, f.section`;
+    feedbackQuery += ` GROUP BY f.year, f.section, f.branch,f.subject, fac.name ORDER BY f.year, f.section`;
 
     feedbackResult = await db.query(feedbackQuery, queryParams);
     
@@ -1110,20 +1254,29 @@ app.post('/logout', function(req, res, next){
 });
 
 app.get("/logout", (req, res, next) => {
-  req.logout((err) => {
+  req.session.destroy((err) => {
     if (err) {
-      return next(err);
+      return res.redirect('/'); // Redirect to home if an error occurs
     }
-    req.session.destroy((err) => {
-      if (err) {
-        console.log('Error destroying session:', err);
-        return next(err);
-      }
-      // Ensure no back button access to previous session
-      res.clearCookie('connect.sid'); // Optional: Clear session cookie
-      res.redirect("/login");
-    });
+
+    // Clear client-side cache to prevent "Back" navigation from reloading the page
+    res.setHeader('Cache-Control', 'no-store'); 
+    res.redirect('/login'); // Redirect to login page or home
   });
+  // req.logout((err) => {
+  //   if (err) {
+  //     return next(err);
+  //   }
+  //   req.session.destroy((err) => {
+  //     if (err) {
+  //       console.log('Error destroying session:', err);
+  //       return next(err);
+  //     }
+  //     // Ensure no back button access to previous session
+     
+  //     res.redirect("/login");
+  //   });
+  // });
 });
 
 

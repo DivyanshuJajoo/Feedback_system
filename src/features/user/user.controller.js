@@ -62,7 +62,8 @@ export default class UserController {
                   const semester=user.semester;
                   const discipline_id=user.discipline_id;
                     const year = user.year;
-                    const subjects = await this.branchRepo.fetchSubjects(semester,discipline_id,branch_name, year);
+                    const subjects = await this.branchRepo.fetchSubjects(semester,discipline_id,uniqueId,branch_name, year);
+                    console.log(subjects);
                     const faculties = await this.subjectRepo.fetchfaculties(subjects,user.section);
                     const questionsArray = [
                       "How would you rate the clarity of the instructor's explanations?",
