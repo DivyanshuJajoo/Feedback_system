@@ -192,7 +192,9 @@
     <a href="/server">Server</a>
     <a href="/report">Report</a>
     <a href="/teacher-remarks">Teacher Remarks</a>
-    <a href="/logout" class="btn btn-danger">Logout</a>
+    <form action="/logout" method="POST" style="display:inline;">
+        <button type="submit" class="btn btn-danger">Logout</button>
+    </form>
 </div>
 
 <div class="main">
@@ -284,7 +286,14 @@
 
                 <label for="section">Section:</label>
                 <input type="text" id="section" name="section" maxlength="1" required>
+
+                <label for="isElective">Is Elective:</label>
+                <select id="isElective" name="is_elective" required>
+                    <option value="true">Yes</option>
+                    <option value="false">No</option>
+                </select>
             </div>
+            
 
             <button type="submit">Map Faculty to Subject</button>
         </form>
@@ -311,7 +320,6 @@
             </tbody>
         </table>
     </div>
-
     <div id="studentMapping" class="tab-content">
         <div class="card">
             <h1>Upload Student Subject Excel File</h1>
@@ -323,40 +331,145 @@
                 <button type="submit" class="btn btn-primary">Upload</button>
             </form>
         </div>
-
        
     </div>
 </div>
 
-<script src="/assets/js/jquery.min.js"></script>
 <script src="/assets/js/bootstrap.bundle.min.js"></script>
 <script>
-    $(document).ready(function () {
-        $("#semesterMappingBtn").click(function () {
-            $(".tab-content").removeClass("active");
-            $("#semesterMapping").addClass("active");
-            $(this).addClass("active");
-            $("#facultyMappingBtn").removeClass("active");
-            $("#studentMappingBtn").removeClass("active");
+    document.addEventListener('DOMContentLoaded', function () {
+        const semesterMappingBtn = document.getElementById('semesterMappingBtn');
+        const facultyMappingBtn = document.getElementById('facultyMappingBtn');
+        const semesterMapping = document.getElementById('semesterMapping');
+        const facultyMapping = document.getElementById('facultyMapping');
+
+        semesterMappingBtn.addEventListener('click', function () {
+            semesterMapping.classList.add('active');
+            facultyMapping.classList.remove('active');
+            semesterMappingBtn.classList.add('active');
+            facultyMappingBtn.classList.remove('active');
         });
 
-        $("#facultyMappingBtn").click(function () {
-            $(".tab-content").removeClass("active");
-            $("#facultyMapping").addClass("active");
-            $(this).addClass("active");
-            $("#semesterMappingBtn").removeClass("active");
-            $("#studentMappingBtn").removeClass("active");
+        facultyMappingBtn.addEventListener('click', function () {
+            facultyMapping.classList.add('active');
+            semesterMapping.classList.remove('active');
+            facultyMappingBtn.classList.add('active');
+            semesterMappingBtn.classList.remove('active');
         });
 
-        $("#studentMappingBtn").click(function () {
-            $(".tab-content").removeClass("active");
-            $("#studentMapping").addClass("active");
-            $(this).addClass("active");
-            $("#semesterMappingBtn").removeClass("active");
-            $("#facultyMappingBtn").removeClass("active");
+        studentMappingBtn.addEventListener('click', function () {
+            facultyMapping.classList.remove('active');
+            semesterMapping.classList.remove('active');
+            facultyMappingBtn.classList.remove('active');
+            semesterMappingBtn.classList.remove('active');
+            studentMapping.classList.add('active');
+            studentMappingBtn.classList.add('active');
         });
 
-        // Add your dynamic dropdown loading logic here for branches, subjects, etc.
+        const disciplineSelect = document.getElementById('discipline');
+        const branchSelect = document.getElementById('branch');
+        const subjectSelect = document.getElementById('subject');
+        const yearSelect = document.getElementById('year');
+
+        disciplineSelect.addEventListener('change', function () {
+            fetch(`/api/branches/${this.value}`)
+                .then(response => response.json())
+                .then(data => {
+                    branchSelect.innerHTML = '<option value="">Select Branch</option>';
+                    data.forEach(branch => {
+                        branchSelect.innerHTML += `<option value="${branch.branch_id}">${branch.branch_name}</option>`;
+                    });
+                });
+
+            fetch(`/api/discipline/${this.value}/duration`)
+                .then(response => response.json())
+                .then(data => {
+                    yearSelect.innerHTML = '<option value="">Select Year</option>';
+                    for (let i = 1; i <= data.duration; i++) {
+                        yearSelect.innerHTML += `<option value="${i}">${i}</option>`;
+                    }
+                });
+        });
+
+        branchSelect.addEventListener('change', function () {
+            fetch(`/api/subjects/${this.value}`)
+                .then(response => response.json())
+                .then(data => {
+                    subjectSelect.innerHTML = '<option value="">Select Subject</option>';
+                    data.forEach(subject => {
+                        subjectSelect.innerHTML += `<option value="${subject.subject_id}">${subject.name}</option>`;
+                    });
+                });
+        });
+
+        // Faculty Mapping Section
+        const disciplineSelect2 = document.getElementById('discipline2');
+        const branchSelect2 = document.getElementById('branch2');
+        const subjectSelect2 = document.getElementById('subject2');
+        const facultySelect = document.getElementById('faculty');
+
+        disciplineSelect2.addEventListener('change', function () {
+            // Clear the branch and faculty selects when discipline changes
+            branchSelect2.innerHTML = '<option value="">Select Branch</option>';
+            facultySelect.innerHTML = '<option value="">Select Faculty</option>';
+            
+            fetch(`/api/branches/${this.value}`)
+                .then(response => response.json())
+                .then(data => {
+                    branchSelect2.innerHTML = '<option value="">Select Branch</option>';
+                    data.forEach(branch => {
+                        branchSelect2.innerHTML += `<option value="${branch.branch_id}">${branch.branch_name}</option>`;
+                    });
+                });
+        });
+
+        branchSelect2.addEventListener('change', function () {
+            // Fetch and populate subjects based on branch_id
+            fetch(`/api/subjects/${this.value}`)
+                .then(response => response.json())
+                .then(data => {
+                    subjectSelect2.innerHTML = '<option value="">Select Subject</option>';
+                    data.forEach(subject => {
+                        subjectSelect2.innerHTML += `<option value="${subject.subject_id}">${subject.name}</option>`;
+                    });
+                });
+
+            // Fetch and populate faculty based on branch_id
+            fetch(`/api/faculty/${this.value}`)
+                .then(response => response.json())
+                .then(data => {
+                    facultySelect.innerHTML = '<option value="">Select Faculty</option>';
+                    data.forEach(faculty => {
+                        facultySelect.innerHTML += `<option value="${faculty.id}">${faculty.name}</option>`;
+                    });
+                });
+        });
+
+        document.querySelectorAll('.delete-btn').forEach(button => {
+            button.addEventListener('click', function (event) {
+                event.preventDefault();
+                const id = this.getAttribute('data-id');
+                if (confirm('Are you sure you want to delete this item?')) {
+                    fetch(`/api/mapping/delete/${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            alert('Item deleted successfully.');
+                            location.reload();
+                        } else {
+                            alert('Failed to delete item.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+                }
+            });
+        });
     });
 </script>
 

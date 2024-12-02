@@ -122,10 +122,14 @@ const questionsArray = [
 // });
 
 app.get("/", async(req, res) => {
-  res.render('login.ejs')
+  res.render('login.ejs', {
+    message: 'Welcome to Login Page.' // Pass the message to the login page
+  })
 });
 app.get("/login", async(req, res) => {
-  res.render('login.ejs')
+  res.render('login.ejs', {
+    message: 'Welcome to Login Page.' // Pass the message to the login page
+  } )
 });
 app.get("/signup", async(req, res) => {
   res.render('signup')
@@ -266,9 +270,16 @@ const responseQuery = {
 await db.query(responseQuery);
 }
 
-res.status(200).send('Feedback submitted successfully.');
-// res.render('/');
-}
+req.logout((err) => {
+  if (err) return res.status(500).send('Error logging out');
+  res.clearCookie('connect.sid'); // Clear session cookie
+
+  // Redirect to the login page with a success message
+  res.render('login', {
+    message: 'Feedback submitted successfully.' // Render login page with a message
+  });
+});
+} 
  catch (error) {
 console.error('Error while submitting feedback:', error);
 res.status(500).send('Internal Server Error');
@@ -457,12 +468,9 @@ app.post('/subjects/upload', async (req, res) => {
         const { name, discipline_name, branch_name } = row;
 
         // Get discipline ID from discipline name
-        // console.log(discipline_name);
         const disciplineResult = await db.query('SELECT id FROM discipline WHERE name = $1', [discipline_name]);
-        // console.log(disciplineResult);
         const discipline = disciplineResult.rows[0];
-        // console.log("here");
-        // console.log(discipline);
+
         // Get branch ID from branch name and discipline ID
         const branchResult = await db.query('SELECT branch_id FROM branchnew WHERE branch_name = $1 AND discipline_id = $2', [branch_name, discipline.id]);
         const branch = branchResult.rows[0];
@@ -821,10 +829,18 @@ app.post('/mapping/subjectSemester', async (req, res) => {
 
 // Handling faculty to subject mapping
 app.post('/mapping/facultySubject', async (req, res) => {
-  const db=getDB();
-  const { discipline, branch, year, semester, faculty, subject, section } = req.body;
-    await db.query('INSERT INTO subject_faculty (faculty_id, subject_id, section) VALUES ($1, $2, $3)', [faculty, subject, section]);
-    res.redirect('/mapping'); // Redirect to mapping page after insertion
+  const db = getDB();
+    const { discipline, branch, faculty, subject, section, is_elective } = req.body;
+    try {
+        await db.query(
+            'INSERT INTO subject_faculty (faculty_id, subject_id, section, is_elective) VALUES ($1, $2, $3, $4)',
+            [faculty, subject, section, is_elective === 'true']
+        );
+        res.redirect('/mapping'); // Redirect to the mapping page after insertion
+    } catch (error) {
+        console.error('Error inserting faculty subject mapping:', error);
+        res.status(500).send('An error occurred');
+    }
 });
 // Delete subject-semester mapping
 app.delete('/api/mapping/subjectSemester/:id', (req, res) => {
@@ -854,7 +870,6 @@ app.delete('/api/mapping/subjectSemester/:id', (req, res) => {
   });
 });
 
-
 // Delete faculty-subject mapping
 app.delete('/api/mapping/facultySubject/:id', async (req, res) => {
   const db = getDB();
@@ -868,6 +883,61 @@ app.delete('/api/mapping/facultySubject/:id', async (req, res) => {
       res.status(200).send({ success: true });
   } catch (error) {
       console.error('Error deleting faculty-subject mapping:', error);
+      res.status(500).send('Server error');
+  }
+});
+
+
+
+app.get('/api/faculty/:branchId', async (req, res) => {
+  const { branchId } = req.params;
+  const db = getDB();
+
+  try {
+      // Query to fetch faculty members based on branch_id
+      const result = await db.query(
+          'SELECT id, name FROM faculty WHERE branch_id = $1',
+          [branchId]
+      );
+
+      // Send the results as JSON
+      res.json(result.rows);
+  } catch (error) {
+      console.error('Error fetching faculty:', error);
+      res.status(500).send('Internal Server Error');
+  }
+});
+
+// Route to render the mapping page
+app.get('/mapping', async (req, res) => {
+  try {
+    const db = getDB();
+      const disciplines = await getDB().query('SELECT id, name FROM discipline');
+      const branches = await getDB().query('SELECT branch_id, branch_name FROM branchnew');
+      const subjects = await getDB().query('SELECT subject_id, name FROM subjectnew');
+      const faculties = await getDB().query('SELECT id, name FROM faculty');
+      const subjectSemesterMappings = await getDB().query(`
+          SELECT s.name as subjectName, sub.semester
+          FROM subjectnew s
+          JOIN subjectnew sub ON s.subject_id = sub.subject_id
+      `);
+      const facultySubjectMappings = await getDB().query(`
+          SELECT f.name as facultyName, s.name as subjectName, sf.section
+          FROM subject_faculty sf
+          JOIN faculty f ON sf.faculty_id = f.id
+          JOIN subjectnew s ON sf.subject_id = s.subject_id
+      `);
+      
+      res.render('mapping', {
+          disciplines: disciplines.rows,
+          branches: branches.rows,
+          subjects: subjects.rows,
+          faculties: faculties.rows,
+          subjectSemesterMappings: subjectSemesterMappings.rows,
+          facultySubjectMappings: facultySubjectMappings.rows
+      });
+  } catch (error) {
+      console.error(error);
       res.status(500).send('Server error');
   }
 });
@@ -967,7 +1037,6 @@ app.get('/api/mapping/studentSubject', async (req, res) => {
   }
 });
 
-// Route to delete a student-subject mapping
 app.delete('/api/mapping/studentSubject/:id', async (req, res) => {
   const mappingId = req.params.id;
 
@@ -984,59 +1053,6 @@ app.delete('/api/mapping/studentSubject/:id', async (req, res) => {
 });
 
 
-
-app.get('/api/faculty/:branchId', async (req, res) => {
-  const { branchId } = req.params;
-  const db = getDB();
-
-  try {
-      // Query to fetch faculty members based on branch_id
-      const result = await db.query(
-          'SELECT id, name FROM faculty WHERE branch_id = $1',
-          [branchId]
-      );
-
-      // Send the results as JSON
-      res.json(result.rows);
-  } catch (error) {
-      console.error('Error fetching faculty:', error);
-      res.status(500).send('Internal Server Error');
-  }
-});
-
-// Route to render the mapping page
-app.get('/mapping', async (req, res) => {
-  try {
-    const db = getDB();
-      const disciplines = await getDB().query('SELECT id, name FROM discipline');
-      const branches = await getDB().query('SELECT branch_id, branch_name FROM branchnew');
-      const subjects = await getDB().query('SELECT subject_id, name FROM subjectnew');
-      const faculties = await getDB().query('SELECT id, name FROM faculty');
-      const subjectSemesterMappings = await getDB().query(`
-          SELECT s.name as subjectName, sub.semester
-          FROM subjectnew s
-          JOIN subjectnew sub ON s.subject_id = sub.subject_id
-      `);
-      const facultySubjectMappings = await getDB().query(`
-          SELECT f.name as facultyName, s.name as subjectName, sf.section
-          FROM subject_faculty sf
-          JOIN faculty f ON sf.faculty_id = f.id
-          JOIN subjectnew s ON sf.subject_id = s.subject_id
-      `);
-      
-      res.render('mapping', {
-          disciplines: disciplines.rows,
-          branches: branches.rows,
-          subjects: subjects.rows,
-          faculties: faculties.rows,
-          subjectSemesterMappings: subjectSemesterMappings.rows,
-          facultySubjectMappings: facultySubjectMappings.rows
-      });
-  } catch (error) {
-      console.error(error);
-      res.status(500).send('Server error');
-  }
-});
 
 //server
 
@@ -1230,54 +1246,13 @@ app.get('/teacher-remarks', async (req, res) => {
 
 
 
-app.use((req, res, next) => {
-  // Disable caching for logged-out users
-  if (!req.isAuthenticated()) {
-    res.set('Cache-Control', 'no-store');
-  }
-  next();
-});
-
-// Logout route
-// Disable caching for authenticated pages
-app.use((req, res, next) => {
-  res.set('Cache-Control', 'no-store');
-  res.set('Pragma', 'no-cache');
-  res.set('Expires', '0');
-  next();
-});
-app.post('/logout', function(req, res, next){
-  req.logout(function(err) {
-    if (err) { return next(err); }
-    res.redirect('/');
-  });
-});
-
-app.get("/logout", (req, res, next) => {
-  req.session.destroy((err) => {
-    if (err) {
-      return res.redirect('/'); // Redirect to home if an error occurs
-    }
-
-    // Clear client-side cache to prevent "Back" navigation from reloading the page
-    res.setHeader('Cache-Control', 'no-store'); 
-    res.redirect('/login'); // Redirect to login page or home
-  });
-  // req.logout((err) => {
-  //   if (err) {
-  //     return next(err);
-  //   }
-  //   req.session.destroy((err) => {
-  //     if (err) {
-  //       console.log('Error destroying session:', err);
-  //       return next(err);
-  //     }
-  //     // Ensure no back button access to previous session
-     
-  //     res.redirect("/login");
-  //   });
-  // });
-});
+// app.use((req, res, next) => {
+//   // Disable caching for logged-out users
+//   if (!req.isAuthenticated()) {
+//     res.set('Cache-Control', 'no-store');
+//   }
+//   next();
+// });
 
 
 
@@ -1302,16 +1277,56 @@ app.get('/dashboard', (req, res) => {
 });
 
 
+// Logout route
+// Disable caching for authenticated pages
+app.use((req, res, next) => {
+  if (req.isAuthenticated()) {
+    // Ensure that authenticated pages are not cached
+    res.set('Cache-Control', 'no-store');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+  }
+  next();
+});
+
+app.post("/logout", (req, res, next) => {
+  req.logout((err) => {
+    if (err) {
+      return next(err);
+    }
+    req.session.destroy((err) => {
+      if (err) {
+        console.log('Error destroying session:', err);
+        return next(err);
+      }
+      // Ensure no back button access to previous session
+      res.clearCookie('connect.sid'); // Optional: Clear session cookie
+
+      // Prevent page caching after logout
+      res.set('Cache-Control', 'no-store');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
+
+      res.render('login', {
+        message: 'Logged Out Sucessfully.' // Pass the message to the login page
+      });
+
+    });
+  });
+});
+
+
+
 app.use((req, res) => {
   res.status(404).send("API not found.");
 });
 
-passport.serializeUser((user, cb) => {
-  cb(null, user);
-});
-passport.deserializeUser((user, cb) => {
-  cb(null, user);
-});
+// passport.serializeUser((user, cb) => {
+//   cb(null, user);
+// });
+// passport.deserializeUser((user, cb) => {
+//   cb(null, user);
+// });
 
 app.listen(port, () => {
   console.log(`Server is running at ${port}`);

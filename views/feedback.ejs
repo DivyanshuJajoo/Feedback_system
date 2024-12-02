@@ -74,10 +74,6 @@
           <label for="faculty<%= index %>"
             >Faculty: <%= Assigned_faculty.faculty_name %></label
           ><br />
-          <% if (Assigned_faculty.is_elective) { %>
-            <p class="note">Note: Skip this subject feedback if you don’t have this subject.</p>
-            <button type="button" class="skip-button" onclick="skipSubject(<%= index %>)">Skip</button>
-          <% } %>
           <% for (let i = 1; i <= 10; i++) { %>
           <h5><%= questionsArray[i-1] %></h5>
           <ul class="bullet-points">

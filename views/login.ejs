@@ -53,6 +53,11 @@
     </style>
   </head>
   <body>
+    <% if (message) { %>
+      <div class="alert alert-success" role="alert">
+        <%= message %>
+      </div>
+    <% } %>
     <form action="/api/user/login" method="post">
         <section class="form-02-main">
             <div class="container">
