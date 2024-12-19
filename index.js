@@ -9,6 +9,7 @@ import pg from "pg"
 import bcrypt from "bcrypt"
 import session from "express-session";
 import passport from "passport";
+import methodOverride from "method-override";
 
 dotenv.config();
 import apiDocs from "./swagger_ver3.0.json" assert { type: "json" };
@@ -34,7 +35,7 @@ import { dirname } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 app.use(fileUpload());
-
+app.use(methodOverride('_method'));
 
 /////passport
 
@@ -121,12 +122,12 @@ const questionsArray = [
 //   console.log('Connected to PostgreSQL database');
 // });
 
-app.get("/", async(req, res) => {
+app.get("/",checkNotAuthenticated, async(req, res) => {
   res.render('login.ejs', {
     message: 'Welcome to Login Page.' // Pass the message to the login page
   })
 });
-app.get("/login", async(req, res) => {
+app.get("/login",checkNotAuthenticated, async(req, res) => {
   res.render('login.ejs', {
     message: 'Welcome to Login Page.' // Pass the message to the login page
   } )
@@ -294,16 +295,16 @@ res.status(500).send('Internal Server Error');
 
 
 
-app.get('/collegeDetails', (req, res) => {
+app.get('/collegeDetails',checkAuthenticated, (req, res) => {
   res.render('collegeDetails.ejs'); 
 });
-app.get('/admin', (req, res) => {
+app.get('/admin',checkAuthenticated, (req, res) => {
   res.render('admin.ejs'); 
 });
 
 
 
-app.get('/accessing', (req, res) => {
+app.get('/accessing',checkAuthenticated, (req, res) => {
   res.render('accessing.ejs'); 
 })
 
@@ -322,7 +323,7 @@ app.post("/signup", async(req, res) => {
 //     const query2= db.query('INSERT VALUES INTO COLUMNS("unique_id", "name" , "role" , "has_filled", "password", "branch_name", "year", "section") VALUES('{unqique} ,{name},"faculty", {password}, "branch_name", 1234,'1'')'),
 //   }
 //   console.log("The entries have been made. A new user is created.");
-  res.render('login');
+  res.render('login', { message: '' });
 
 // }
 
@@ -332,7 +333,7 @@ app.post("/signup", async(req, res) => {
 });
 //subjects
 
-app.get('/subjects', async (req, res) => {
+app.get('/subjects',checkAuthenticated, async (req, res) => {
   const db = getDB();
   try {
     const disciplinesResult = await db.query('SELECT * FROM discipline');
@@ -393,7 +394,7 @@ app.post('/subjects/delete/:id', async (req, res) => {
 });
 
 
-app.get('/subjects/edit/:id', async (req, res) => {
+app.get('/subjects/edit/:id',checkAuthenticated, async (req, res) => {
   const db = getDB();
   const subjectId = req.params.id;
   try {
@@ -498,7 +499,7 @@ app.post('/subjects/upload', async (req, res) => {
 
 
 //discipline
-app.get('/discipline', async (req, res) => {
+app.get('/discipline',checkAuthenticated, async (req, res) => {
   const db=getDB();
   console.log("ok");
   try {
@@ -534,7 +535,7 @@ app.post('/discipline/delete/:id', async (req, res) => {
   }
 });
 
-app.get('/discipline/edit/:id', async (req, res) => {
+app.get('/discipline/edit/:id', checkAuthenticated,async (req, res) => {
   const db=getDB();
   const id = req.params.id;
   try {
@@ -565,7 +566,7 @@ app.post('/discipline/edit/:id', async (req, res) => {
 
 
 
-app.get('/branches', async (req, res) => {
+app.get('/branches',checkAuthenticated, async (req, res) => {
   console.log("1");
   const db = getDB();
   try {
@@ -627,7 +628,7 @@ app.post('/branches/delete/:branch_id', async (req, res) => {
 
 //branch
 // Route to display the faculty page
-app.get('/faculty', async (req, res) => {
+app.get('/faculty',checkAuthenticated, async (req, res) => {
   const db = getDB();
   try {
 
@@ -688,7 +689,7 @@ app.post('/faculty/delete/:id', async (req, res) => {
 });
 
 // Route to edit a faculty
-app.get('/faculty/edit/:id', async (req, res) => {
+app.get('/faculty/edit/:id',checkAuthenticated, async (req, res) => {
   const db = getDB();
   const facultyId = req.params.id;
   try {
@@ -774,7 +775,7 @@ app.post('/faculty/upload', async (req, res) => {
 
 //mapping
 // Fetch branches based on discipline
-app.get('/api/branches/:disciplineId', async (req, res) => {
+app.get('/api/branches/:disciplineId',checkAuthenticated, async (req, res) => {
   const db=getDB();
   const disciplineId = req.params.disciplineId;
     const branches = await db.query('SELECT branch_id, branch_name FROM branchnew WHERE discipline_id = $1', [disciplineId]);
@@ -782,7 +783,7 @@ app.get('/api/branches/:disciplineId', async (req, res) => {
 });
 
 // Fetch subjects based on branch
-app.get('/api/subjects/:branchId', async (req, res) => {
+app.get('/api/subjects/:branchId',checkAuthenticated, async (req, res) => {
   const db=getDB();
   const branchId = req.params.branchId;
     const subjects = await db.query('SELECT subject_id, name FROM subjectnew WHERE branch_id = $1', [branchId]);
@@ -790,7 +791,7 @@ app.get('/api/subjects/:branchId', async (req, res) => {
 });
 
 // Fetch duration based on discipline
-app.get('/api/discipline/:disciplineId/duration', async (req, res) => {
+app.get('/api/discipline/:disciplineId/duration',checkAuthenticated, async (req, res) => {
   const db=getDB();
   const disciplineId = req.params.disciplineId;
     const discipline = await db.query('SELECT duration FROM discipline WHERE id = $1', [disciplineId]);
@@ -889,7 +890,7 @@ app.delete('/api/mapping/facultySubject/:id', async (req, res) => {
 
 
 
-app.get('/api/faculty/:branchId', async (req, res) => {
+app.get('/api/faculty/:branchId',checkAuthenticated, async (req, res) => {
   const { branchId } = req.params;
   const db = getDB();
 
@@ -909,7 +910,7 @@ app.get('/api/faculty/:branchId', async (req, res) => {
 });
 
 // Route to render the mapping page
-app.get('/mapping', async (req, res) => {
+app.get('/mapping',checkAuthenticated, async (req, res) => {
   try {
     const db = getDB();
       const disciplines = await getDB().query('SELECT id, name FROM discipline');
@@ -1027,7 +1028,7 @@ app.post('/api/mapping/studentSubject', async (req, res) => {
 });
 
 // Route to fetch the student-subject mappings for the table
-app.get('/api/mapping/studentSubject', async (req, res) => {
+app.get('/api/mapping/studentSubject',checkAuthenticated, async (req, res) => {
   try {
     const result = await db.query('SELECT * FROM student_subject');
     res.json(result.rows);
@@ -1057,7 +1058,7 @@ app.delete('/api/mapping/studentSubject/:id', async (req, res) => {
 //server
 
 
-app.get('/server', async (req, res) => {
+app.get('/server',checkAuthenticated, async (req, res) => {
 
   const db = getDB();
   try {
@@ -1124,7 +1125,7 @@ app.post('/server/toggle', async (req, res) => {
 
 //report
 
-app.get('/report', async (req, res) => {
+app.get('/report',checkAuthenticated, async (req, res) => {
   const db = getDB();
   const currentYear = new Date().getFullYear();
   console.log(currentYear);
@@ -1191,7 +1192,7 @@ app.get('/report', async (req, res) => {
 
 
 //teacher remarks
-app.get('/teacher-remarks', async (req, res) => {
+app.get('/teacher-remarks',checkAuthenticated, async (req, res) => {
   const db = getDB();
   const currentYear = new Date().getFullYear();
 
@@ -1260,7 +1261,7 @@ app.get('/teacher-remarks', async (req, res) => {
 //report end
 
 
-app.get('/dashboard', (req, res) => {
+app.get('/dashboard',checkAuthenticated, (req, res) => {
   const facultyScores = {};
   faculties.forEach(faculty => {
       const feedbackData = feedback.filter(item => item.facultyId === faculty.UniqueID);
@@ -1289,31 +1290,55 @@ app.use((req, res, next) => {
   next();
 });
 
-app.post("/logout", (req, res, next) => {
+function checkNotAuthenticated(req,res,next){
+  if(req.isAuthenticated()){
+    if(req.user.role=='admin'){
+      console.log(req.user.role);
+      return res.render('admin')
+    }
+    
+  }
+  next()
+}
+function checkAuthenticated(req,res,next){
+  if(req.isAuthenticated()){
+    return next()
+  }
+  res.render('login',{message: 'Welcome to login page'})
+}
+app.delete("/logout", (req, res, next) => {
   req.logout((err) => {
     if (err) {
-      return next(err);
+      return next(err); // Handle errors from req.logout()
     }
+
+    // Destroy session and clear cookies
     req.session.destroy((err) => {
       if (err) {
         console.log('Error destroying session:', err);
         return next(err);
       }
-      // Ensure no back button access to previous session
-      res.clearCookie('connect.sid'); // Optional: Clear session cookie
 
-      // Prevent page caching after logout
+      // Clear the session cookie
+      res.clearCookie('connect.sid', {
+        path: '/',
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+      });
+
+      // Prevent caching of the previous session page
       res.set('Cache-Control', 'no-store');
       res.set('Pragma', 'no-cache');
       res.set('Expires', '0');
 
+      // Render login page with a message
       res.render('login', {
-        message: 'Logged Out Sucessfully.' // Pass the message to the login page
+        message: 'Logged Out Successfully.' // Pass the message to the login page
       });
-
     });
   });
 });
+
 
 
 

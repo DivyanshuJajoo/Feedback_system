@@ -38,16 +38,28 @@
            color: #fff;
            text-decoration: none;
            margin-bottom: 10px;
+           border-radius: 5px;
+           transition: background-color 0.3s ease;
         }
         
+        .sidebar a:hover {
+           background-color: #444;
+        }
+
+        /* .sidebar .btn-danger {
+           width: 100%;
+           margin-top: 10px;
+           border-radius: 5px;
+        } */
+
         .main {
-           margin-left: 220px; /* Adjust margin-left to account for the width of the sidebar */
-           padding: 20px; /* Add some padding for better spacing */
+           margin-left: 220px;
+           padding: 20px;
         }
         
         .header {
            font-size: 2em;
-           margin-bottom: 20px; /* Increase margin-bottom for better spacing */
+           margin-bottom: 20px;
         }
         
         .dashboard {
@@ -58,23 +70,29 @@
         
         .card {
            background-color: #f5f5f5;
-           padding: 20px; /* Increase padding for better spacing */
+           padding: 20px;
            border-radius: 5px;
            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
            text-decoration: none;
            color: inherit;
-           height: 200px; /* Set a fixed height for the cards */
+           height: 200px;
            display: flex;
            flex-direction: column;
            align-items: center;
            justify-content: center;
            text-align: center;
+           transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
         
+        .card:hover {
+           transform: translateY(-5px);
+           box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
         .card img {
-           max-width: 80px; /* Set a max-width for the images */
+           max-width: 80px;
            height: auto;
-           margin-bottom: 10px; /* Add margin to space out the image and text */
+           margin-bottom: 10px;
         }
 
         .card p {
@@ -96,8 +114,8 @@
       <a href="/mapping">Mapping</a>
       <a href="/server">Server</a>
       <a href="/report">Report</a>
-      <a href="/teacher-remarks">Teacher Remarks</a>
-      <form action="/logout" method="POST" style="display:inline;">
+      <a href="/teacher-remarks">Faculty Remarks</a>
+      <form action="/logout?_method=DELETE" method="POST" style="display:inline;">
         <button type="submit" class="btn btn-danger">Logout</button>
     </form>
     </div>
@@ -112,7 +130,6 @@
           <img src="assets/images/admin.png" alt="Dashboard">
           <p>Add Discipline</p>
         </a>
-        
         <a href="/branches" class="card">
           <img src="assets/images/branch.png" alt="Branches">
           <p>Branches</p>
@@ -143,6 +160,5 @@
         </a>
       </div>
     </div>
-    
   </body>
 </html>

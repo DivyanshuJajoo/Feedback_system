@@ -1,16 +1,13 @@
 <!doctype html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
+    <title>Manage Disciplines</title>
 
     <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
     <link href="/assets/css/font-awesome.min.css" rel="stylesheet">
     <link href="/assets/css/style.css" rel="stylesheet">
-
-    <title>Admin Page</title>
 
     <style>
         body {
@@ -18,21 +15,7 @@
             margin: 0;
             padding: 0;
             color: #333;
-        }
-
-        .header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
             background-color: #f8f9fa;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            z-index: 100;
-        }
-
-        .header img {
-            width: 100%;
-            height: auto;
         }
 
         .sidebar {
@@ -53,100 +36,148 @@
             color: #fff;
             text-decoration: none;
             margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .sidebar a:hover {
+            background-color: #495057;
         }
 
         .main {
-            margin-left: 220px; /* Adjust margin-left to account for the width of the sidebar */
-            padding: 20px; /* Add some padding for better spacing */
+            margin-left: 220px;
+            padding: 20px;
         }
 
-        .main form {
-            display: flex;
-            flex-wrap: wrap;
+        .form-control, .btn {
+            margin-bottom: 15px;
         }
 
-        .main input {
-            flex: 1 0 100%;
-            margin: 10px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+        .btn-primary, .btn-secondary, .btn-danger {
+            margin-right: 10px;
         }
 
-        .main button {
-            margin: 10px;
-            padding: 10px;
-            border: none;
-            background-color: #3498db;
-            color: #fff;
-            border-radius: 4px;
+        .card {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
-        .discipline-list {
+        table {
+            width: 100%;
+            border-collapse: collapse;
             margin-top: 20px;
         }
 
-        .discipline-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            border-bottom: 1px solid #ccc;
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
         }
 
-        .discipline-item button {
+        th {
+            background-color: #f8f9fa;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #e9ecef;
+        }
+
+        .table-actions {
+            display: flex;
+            align-items: center;
+        }
+
+        .table-actions form {
+            margin: 0;
+        }
+
+        .table-actions a {
             margin-left: 10px;
         }
     </style>
-  </head>
-  <body>
-    <div class="sidebar">
-        <a href="#">Admin</a>
-        <a href="/admin">Dashboard</a>
-        <a href="/collegeDetails">College Details</a>
-        <a href="/discipline">Discipline</a>
-        <a href="/branches">Branches</a>
-        <a href="/subjects">Subjects</a>
-        <a href="/faculty">Faculty</a>
-        <a href="/mapping">Mapping</a>
-        <a href="/server">Server</a>
-        <a href="/report">Report</a>
-        <a href="/teacher-remarks">Teacher Remarks</a>
-        <form action="/logout" method="POST" style="display:inline;">
-            <button type="submit" class="btn btn-danger">Logout</button>
+</head>
+<body>
+<div class="sidebar">
+    <a href="#">Admin</a>
+    <a href="/admin">Dashboard</a>
+    <a href="/collegeDetails">College Details</a>
+    <a href="/discipline">Discipline</a>
+    <a href="/branches">Branches</a>
+    <a href="/subjects">Subjects</a>
+    <a href="/faculty">Faculty</a>
+    <a href="/mapping">Mapping</a>
+    <a href="/server">Server</a>
+    <a href="/report">Report</a>
+    <a href="/teacher-remarks">Faculty Remarks</a>
+    <form action="/logout?_method=DELETE" method="POST" style="display:inline;">
+        <button type="submit" class="btn btn-danger">Logout</button>
+    </form>
+</div>
+
+<div class="main">
+    <h1>Manage Disciplines</h1>
+    
+    <!-- Add Discipline -->
+    <div class="card">
+        <h2>Add New Discipline</h2>
+        <form action="/discipline/add" method="POST">
+            <div class="form-group">
+                <label for="discipline_name">Discipline Name</label>
+                <input type="text" id="discipline_name" name="discipline_name" class="form-control" placeholder="Enter discipline name" required>
+            </div>
+            <div class="form-group">
+                <label for="duration">Duration (Years)</label>
+                <input type="number" id="duration" name="duration" class="form-control" placeholder="Enter duration in years" min="1" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Discipline</button>
         </form>
     </div>
 
-    <div class="main">
-        <h1>Add Discipline</h1>
-        <form action="/discipline/add" method="post">
-            <label for="discipline_name">Discipline</label>
-            <input type="text" id="discipline_name" name="discipline_name" required>
-            <label for="duration">Duration</label>
-            <input type="text" id="duration" name="duration" required>
-            <button type="submit">Add Discipline</button>
+    <!-- Upload Disciplines -->
+    <div class="card">
+        <h2>Upload Disciplines via Excel</h2>
+        <form action="/discipline/upload" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="disciplineFile">Upload Discipline Excel File:</label>
+                <input type="file" id="disciplineFile" name="disciplineFile" class="form-control-file" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Upload</button>
         </form>
+    </div>
 
-        <div class="discipline-list">
-            <h2>Available Disciplines</h2>
-            <% if (disciplines.length > 0) { %>
+    <!-- Disciplines List -->
+    <div class="card">
+        <h2>Disciplines List</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Discipline Name</th>
+                    <th>Duration (Years)</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
                 <% disciplines.forEach(discipline => { %>
-                    <div class="discipline-item">
-                        <span><%= discipline.name %> (<%= discipline.duration %> years)</span>
-                        <div>
-                            <form action="/discipline/edit/<%= discipline.id %>" method="get" style="display:inline;">
-                                <button type="submit" class="btn btn-warning">Edit</button>
-                            </form>
-                            <form action="/discipline/delete/<%= discipline.id %>" method="post" style="display:inline;">
+                    <tr>
+                        <td><%= discipline.name %></td>
+                        <td><%= discipline.duration %></td>
+                        <td class="table-actions">
+                            <form action="/discipline/delete/<%= discipline.id %>" method="POST" style="display:inline;">
                                 <button type="submit" class="btn btn-danger">Delete</button>
                             </form>
-                        </div>
-                    </div>
+                            <a href="/discipline/edit/<%= discipline.id %>" class="btn btn-secondary">Edit</a>
+                        </td>
+                    </tr>
                 <% }) %>
-            <% } else { %>
-                <p>No disciplines available.</p>
-            <% } %>
-        </div>
+            </tbody>
+        </table>
     </div>
-  </body>
+</div>
+</body>
 </html>

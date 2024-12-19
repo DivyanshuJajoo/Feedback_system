@@ -15,8 +15,15 @@ req.body=obj;
   userController.login(req, res);
 });
 userRoute.get("/login", (req, res) => {
-  res.render("login");
+  res.render("login", {message: "Welcome to login page"});
 });
+
+function checkAuthenticated(req,res,next){
+  if(req.isAuthenticated()){
+    return next()
+  }
+  res.render('login',{message: 'Welcome to login page'})
+}
 
 // userRoute.post("/feedback", (req,res) => {
 //   userController.feedback(req,res);

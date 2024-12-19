@@ -191,8 +191,8 @@
     <a href="/mapping">Mapping</a>
     <a href="/server">Server</a>
     <a href="/report">Report</a>
-    <a href="/teacher-remarks">Teacher Remarks</a>
-    <form action="/logout" method="POST" style="display:inline;">
+    <a href="/teacher-remarks">Faculty Remarks</a>
+    <form action="/logout?_method=DELETE" method="POST" style="display:inline;">
         <button type="submit" class="btn btn-danger">Logout</button>
     </form>
 </div>
@@ -206,6 +206,7 @@
 
     <div id="semesterMapping" class="tab-content active">
         <h1>Subject to Semester Mapping</h1>
+        <h8>Note: Map subject to garbage semester value 11 if it need not be mapped to any semester.</h8>
         <form id="subjectSemesterForm" action="/mapping/subjectSemester" method="POST">
             <div style="display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
                 <label for="discipline">Discipline:</label>
@@ -243,7 +244,7 @@
             <tr>
                 <th>Subject</th>
                 <th>Semester</th>
-                <th>Action</th>
+                
             </tr>
             </thead>
             <tbody>
@@ -251,7 +252,7 @@
                 <tr>
                     <td><%= mapping.subjectname %></td>
                     <td><%= mapping.semester %></td>
-                    <td><a href="#" class="delete-btn" data-id="<%= mapping.id %>">Delete</a></td>
+                    
                 </tr>
             <% }); %>
             </tbody>
@@ -305,7 +306,7 @@
                 <th>Faculty</th>
                 <th>Subject</th>
                 <th>Section</th>
-                <th>Action</th>
+                
             </tr>
             </thead>
             <tbody>
@@ -314,7 +315,7 @@
                     <td><%= mapping.facultyname %></td>
                     <td><%= mapping.subjectname %></td>
                     <td><%= mapping.section %></td>
-                    <td><a href="#" class="delete-btn" data-id="<%= mapping.id %>">Delete</a></td>
+                    
                 </tr>
             <% }); %>
             </tbody>

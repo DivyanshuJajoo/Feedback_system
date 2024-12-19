@@ -149,15 +149,15 @@
         <a href="/mapping">Mapping</a>
         <a href="/server">Server</a>
         <a href="/report">Report</a>
-        <a href="/teacher-remarks">Teacher Remarks</a>
-        <form action="/logout" method="POST" style="display:inline;">
+        <a href="/teacher-remarks">Faculty Remarks</a>
+        <form action="/logout?_method=DELETE" method="POST" style="display:inline;">
             <button type="submit" class="btn btn-danger">Logout</button>
         </form>
     </div>
 
     <div class="main">
         <div class="card">
-            <h1>Teacher Remarks</h1>
+            <h1>Faculty Remarks</h1>
 
             <!-- Filter Form -->
             <form class="filter-form" action="/teacher-remarks" method="get">
@@ -175,6 +175,8 @@
                 <select name="feedbackYear" id="feedbackYear">
                     <option value="2023" <%= feedbackYear == '2023' ? 'selected' : '' %>>2023</option>
                     <option value="2024" <%= feedbackYear == '2024' ? 'selected' : '' %>>2024</option>
+                    <option value="2025" <%= feedbackYear == '2025' ? 'selected' : '' %>>2025</option>
+
                     <!-- Add more years as needed -->
                 </select>
 

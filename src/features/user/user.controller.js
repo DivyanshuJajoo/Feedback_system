@@ -94,7 +94,7 @@ export default class UserController {
               return res.render("dashboard",{feedbacks});
             }
             else if(user.role == "admin"){
-              return res.render("collegeDetails");
+              return res.render('collegeDetails');
             }
     });
    

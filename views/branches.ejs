@@ -3,14 +3,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
-
     <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
     <link href="/assets/css/font-awesome.min.css" rel="stylesheet">
     <link href="/assets/css/style.css" rel="stylesheet">
-
-    <title>Admin Page</title>
+    <title>Admin Page - Discipline Management</title>
 
     <style>
         body {
@@ -20,122 +16,113 @@
             color: #333;
         }
 
-        .header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background-color: #f8f9fa;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            z-index: 100;
-        }
-
-        .header img {
-            width: 100%;
-            height: auto;
-        }
-
         .sidebar {
             position: fixed;
             top: 0;
             left: 0;
-            width: 200px;
+            width: 220px;
             height: 100%;
             background-color: #222;
             color: #fff;
-            padding: 10px;
-            box-sizing: border-box;
+            padding: 20px;
         }
 
         .sidebar a {
             display: block;
-            padding: 10px;
+            padding: 10px 15px;
             color: #fff;
             text-decoration: none;
-            margin-bottom: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            transition: background 0.3s;
         }
 
+        .sidebar a:hover {
+            background-color: #444;
+        }
+
+        /* .sidebar .btn-danger {
+            margin-top: 20px;
+            width: 100%;
+            padding: 10px;
+        } */
+
         .main {
-            margin-left: 220px;
+            margin-left: 240px;
             padding: 20px;
+            background-color: #f9f9f9;
+            min-height: 100vh;
         }
 
         .tabs {
             display: flex;
-            border-bottom: 1px solid #ccc;
             margin-bottom: 20px;
         }
 
         .tab {
             padding: 10px 20px;
             cursor: pointer;
+            background-color: #f8f9fa;
+            margin-right: 5px;
+            border: 1px solid #ccc;
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
         }
 
         .tab.active {
-            border-bottom: 2px solid #3498db;
+            background-color: #fff;
             font-weight: bold;
+            border-bottom: 2px solid #007bff;
         }
 
         .tab-content {
-            display: none;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 0 4px 4px 4px;
         }
 
-        .tab-content.active {
-            display: block;
+        form label {
+            font-weight: bold;
         }
 
-        .main form {
-            display: flex;
-            flex-wrap: wrap;
-        }
-
-        .main input, .main select {
-            flex: 1 0 100%;
-            margin: 10px;
+        form input, form select {
+            margin-bottom: 15px;
             padding: 10px;
+            width: 100%;
             border: 1px solid #ccc;
             border-radius: 4px;
         }
 
-        .main button {
-            margin: 10px;
-            padding: 10px;
-            border: none;
-            background-color: #3498db;
+        form button {
+            background-color: #007bff;
             color: #fff;
+            border: none;
+            padding: 10px 15px;
             border-radius: 4px;
+            transition: background 0.3s;
         }
 
-        .branch-list {
-            margin-top: 20px;
-        }
-
-        .list-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            border-bottom: 1px solid #ccc;
-        }
-
-        .list-item button {
-            margin-left: 10px;
+        form button:hover {
+            background-color: #0056b3;
         }
 
         table {
             width: 100%;
-            border-collapse: collapse;
             margin-top: 20px;
+            border-collapse: collapse;
+            background-color: #fff;
         }
 
         table th, table td {
-            border: 1px solid #ccc;
-            padding: 8px;
+            padding: 10px;
             text-align: left;
+            border: 1px solid #ddd;
         }
 
         table th {
-            background-color: #f2f2f2;
+            background-color: #f8f9fa;
+            font-weight: bold;
         }
 
         table tr:nth-child(even) {
@@ -144,6 +131,19 @@
 
         table tr:hover {
             background-color: #f1f1f1;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: #fff;
+            border: none;
+            padding: 8px 10px;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
         }
     </style>
 </head>
@@ -159,62 +159,60 @@
     <a href="/mapping">Mapping</a>
     <a href="/server">Server</a>
     <a href="/report">Report</a>
-    <a href="/teacher-remarks">Teacher Remarks</a>
-    <form action="/logout" method="POST" style="display:inline;">
+    <a href="/teacher-remarks">Faculty Remarks</a>
+    <form action="/logout?_method=DELETE" method="POST" style="display:inline;">
         <button type="submit" class="btn btn-danger">Logout</button>
     </form>
 </div>
 
 <div class="main">
     <div class="tabs">
-        <div class="tab active" data-tab="branch">Add Branch</div>
+        <div class="tab active" data-tab="branch">Manage Branches</div>
     </div>
 
     <div id="branch" class="tab-content active">
-        <h1>Add Branch</h1>
+        <h1>Manage Branches</h1>
         <form action="/branches/add-branch" method="post">
             <label for="discipline_id">Discipline</label>
-            <select id="discipline_id" name="discipline_id">
+            <select id="discipline_id" name="discipline_id" required>
                 <% disciplines.forEach(discipline => { %>
                     <option value="<%= discipline.id %>"><%= discipline.name %></option>
                 <% }) %>
             </select>
             <label for="branch_name">Branch Name</label>
-            <input type="text" id="branch_name" name="branch_name" required>
+            <input type="text" id="branch_name" name="branch_name" placeholder="Enter branch name" required>
             <button type="submit">Add Branch</button>
         </form>
 
-        <div class="branch-list">
-            <h2>Branches</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Discipline</th>
-                        <th>Branch Name</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% if (branches.length > 0) { %>
-                        <% branches.forEach(branch => { %>
-                            <tr>
-                                <td><%= branch.discipline_name %></td>
-                                <td><%= branch.branch_name %></td>
-                                <td>
-                                    <form action="/branches/delete/<%= branch.branch_id %>" method="post" style="display:inline;">
-                                        <button type="submit" class="btn btn-danger">Delete</button>
-                                    </form>
-                                </td>
-                            </tr>
-                        <% }) %>
-                    <% } else { %>
+        <h2>Existing Branches</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Discipline</th>
+                    <th>Branch Name</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (branches.length > 0) { %>
+                    <% branches.forEach(branch => { %>
                         <tr>
-                            <td colspan="3">No branches available.</td>
+                            <td><%= branch.discipline_name %></td>
+                            <td><%= branch.branch_name %></td>
+                            <td>
+                                <form action="/branches/delete/<%= branch.branch_id %>" method="post" style="display:inline;">
+                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                </form>
+                            </td>
                         </tr>
-                    <% } %>
-                </tbody>
-            </table>
-        </div>
+                    <% }) %>
+                <% } else { %>
+                    <tr>
+                        <td colspan="3">No branches available.</td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
     </div>
 </div>
 
