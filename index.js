@@ -1073,7 +1073,7 @@ app.get('/server',checkAuthenticated, async (req, res) => {
       // Create an array of states for the semesters (1 to 8)
       const semesterStates = new Array(8).fill(false);
       result.rows.forEach(row => {
-          if (row.semester >= 1 && row.semester <= 8) {
+          if (row.semester >= 0 && row.semester <= 8) {
               semesterStates[row.semester - 1] = row.is_allowed;
           }
       });
@@ -1311,7 +1311,7 @@ app.delete("/logout", (req, res, next) => {
     if (err) {
       return next(err); // Handle errors from req.logout()
     }
-
+    
     // Destroy session and clear cookies
     req.session.destroy((err) => {
       if (err) {

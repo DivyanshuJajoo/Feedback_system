@@ -170,6 +170,9 @@
 
     <div class="card">
         <h2>Upload Subjects via Excel</h2>
+        <p><strong>File Format:</strong> The file should be formatted with the following columns: 
+            <code>name , discipline_name , branch_name            </code>
+            </p>
         <form action="/subjects/upload" method="POST" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="subjectFile">Upload Subject Excel File:</label>

@@ -194,6 +194,10 @@
 
         <div class="card">
             <h1>Upload Faculty Excel File</h1>
+            <p><strong>File Format:</strong> The file should be formatted with the following columns: 
+                <code>faculty_name , email , phone , discipline_id , branch_id
+                </code>
+                </p>
             <form action="/faculty/upload" method="POST" enctype="multipart/form-data">
                 <div class="form-group">
                     <input type="file" name="facultyFile" accept=".xlsx, .xls" class="form-control-file" required>

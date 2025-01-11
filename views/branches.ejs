@@ -190,6 +190,7 @@
                 <tr>
                     <th>Discipline</th>
                     <th>Branch Name</th>
+                    <th>Branch ID</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -199,6 +200,7 @@
                         <tr>
                             <td><%= branch.discipline_name %></td>
                             <td><%= branch.branch_name %></td>
+                            <td><%= branch.branch_id%></td>
                             <td>
                                 <form action="/branches/delete/<%= branch.branch_id %>" method="post" style="display:inline;">
                                     <button type="submit" class="btn btn-danger">Delete</button>

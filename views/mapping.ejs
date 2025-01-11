@@ -109,6 +109,19 @@
             display: block;
         }
 
+        .tab-content form button {
+    justify-self: start; /* Align the button to the left side */
+    width: auto; /* Auto-adjust the width based on the content */
+    padding: 10px 20px; /* Standard padding */
+    font-size: 16px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
         .main form {
             display: grid;
             gap: 10px;
@@ -176,6 +189,38 @@
         .main table a:hover {
             text-decoration: underline;
         }
+        @media (min-width: 875px) and (max-width: 1130px) {
+    .tab-content form {
+        grid-template-columns: 1fr 1.5fr; /* Adjusted ratio for smaller screens */
+    }
+
+    .tab-content form label {
+        font-size: 14px; /* Smaller labels for compact layout */
+    }
+
+    .tab-content form input,
+    .tab-content form select {
+        font-size: 14px; /* Slightly smaller input fields */
+    }
+
+    .tab-content h3 {
+        text-align: center; /* Center-align the section heading */
+        margin-bottom: 20px;
+    }
+    .tab-content form button {
+    grid-column: 1 / -1; /* Make the button span the full width below the form content */
+    justify-self: left; /* Center the button */
+    width: 50%; /* Set button width relative to the form */
+    padding: 10px 20px; /* Standard padding for a neat look */
+    font-size: 16px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+}
     </style>
 </head>
 <body>
@@ -324,6 +369,9 @@
     <div id="studentMapping" class="tab-content">
         <div class="card">
             <h1>Upload Student Subject Excel File</h1>
+            <p><strong>File Format:</strong> The file should be formatted with the following columns: 
+                <code>unique_id, Name, Branch Name, Year, Section, Discipline ID, Semester, Subject 1, Subject 2, ...</code>
+                </p>
             <form action="/api/mapping/studentSubject" method="POST" enctype="multipart/form-data">
                 <div class="form-group">
                     <label for="studentFile">Choose Excel File:</label>
