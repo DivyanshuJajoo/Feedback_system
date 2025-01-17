@@ -156,6 +156,16 @@ app.post('/submit-feedback', async (req, res) => {
  const year=user.year;
  const section=user.section;
  const branch=user.branch_name;
+ const discipline_id=user.discipline_id;
+ let branch_id = null;
+
+  if (branch) {
+    const branchResult = await db.query(
+      'SELECT branch_id FROM branchnew WHERE branch_name = $1',
+      [branch]
+    );
+    branch_id = branchResult.rows.length ? branchResult.rows[0].branch_id : null;
+  }
  const faculties = JSON.parse(req.body.faculties);
  const obj = JSON.parse(JSON.stringify(req.body)); 
  req.body=obj;
@@ -202,6 +212,8 @@ await db.query(updateUserQuery);
     Q9: facultyFeedback[9],
     Q10: facultyFeedback[10],
     responses:1,
+    branch_id,
+    discipline_id
   };
   const currentYear = new Date().getFullYear();
   console.log(currentYear);
@@ -209,9 +221,10 @@ await db.query(updateUserQuery);
   const existingFeedback = await db.query({
     text: `
         SELECT * FROM feedback
-        WHERE fac_id = $1 AND subject = $2 AND year = $3 AND branch = $4 AND section = $5 AND Feedback_year = $6
+        WHERE fac_id = $1 AND subject = $2 AND year = $3 AND branch = $4 AND section = $5 AND Feedback_year = $6 AND branch_id = $7 
+              AND discipline_id = $8
     `,
-    values: [feedbackData.fac_id, feedbackData.subject, feedbackData.year, feedbackData.branch, feedbackData.section, currentYear]
+    values: [feedbackData.fac_id, feedbackData.subject, feedbackData.year, feedbackData.branch, feedbackData.section, currentYear, feedbackData.branch_id,feedbackData.discipline_id]
 });
 
 if (existingFeedback.rows.length > 0) {
@@ -222,12 +235,13 @@ if (existingFeedback.rows.length > 0) {
           SET q1 = q1 + $6, q2 = q2 + $7, q3 = q3 + $8, q4 = q4 + $9, q5 = q5 + $10,
               q6 = q6 + $11, q7 = q7 + $12, q8 = q8 + $13, q9 = q9 + $14, q10 = q10 + $15,
               responses = responses + 1
-          WHERE fac_id = $1 AND subject = $2 AND year = $3 AND branch = $4 AND section = $5
+          WHERE fac_id = $1 AND subject = $2 AND year = $3 AND branch = $4 AND section = $5 AND branch_id = $16
+                AND discipline_id = $17
       `,
       values: [
           feedbackData.fac_id, feedbackData.subject, feedbackData.year, feedbackData.branch, feedbackData.section,
           feedbackData.Q1, feedbackData.Q2, feedbackData.Q3, feedbackData.Q4, feedbackData.Q5,
-          feedbackData.Q6, feedbackData.Q7, feedbackData.Q8, feedbackData.Q9, feedbackData.Q10
+          feedbackData.Q6, feedbackData.Q7, feedbackData.Q8, feedbackData.Q9, feedbackData.Q10, feedbackData.branch_id,feedbackData.discipline_id
       ]
   };
   await db.query(updateQuery);
@@ -235,8 +249,8 @@ if (existingFeedback.rows.length > 0) {
 
   const feedbackQuery = {
     text: `
-      INSERT INTO feedback (fac_id, subject,year,branch,section,q1, q2, q3, q4, q5, q6, q7, q8, q9, q10,responses,feedback_year)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14,$15,$16,$17)
+      INSERT INTO feedback (fac_id, subject,year,branch,section,q1, q2, q3, q4, q5, q6, q7, q8, q9, q10,responses,feedback_year,branch_id, discipline_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14,$15,$16,$17,$18,$19)
     `,
     values: [
       feedbackData.fac_id,
@@ -255,7 +269,9 @@ if (existingFeedback.rows.length > 0) {
       feedbackData.Q9,
       feedbackData.Q10,
       feedbackData.responses,
-      currentYear
+      currentYear,
+      feedbackData.branch_id,
+      feedbackData.discipline_id
     ]
   };
   await db.query(feedbackQuery);
@@ -263,10 +279,10 @@ if (existingFeedback.rows.length > 0) {
 const remark = req.body[`remark${i}`];
 const responseQuery = {
   text: `
-    INSERT INTO responses (fac_id, subject, year, branch, section, feedback_year, response)
-    VALUES ($1, $2, $3, $4, $5, $6, $7)
+    INSERT INTO responses (fac_id, subject, year, branch, section, feedback_year, response,branch_id,discipline_id)
+    VALUES ($1, $2, $3, $4, $5, $6, $7,$8,$9)
   `,
-  values: [feedbackData.fac_id, feedbackData.subject, feedbackData.year, feedbackData.branch, feedbackData.section, currentYear, remark]
+  values: [feedbackData.fac_id, feedbackData.subject, feedbackData.year, feedbackData.branch, feedbackData.section, currentYear, remark,feedbackData.branch_id,feedbackData.discipline_id]
 };
 await db.query(responseQuery);
 }
@@ -1128,13 +1144,34 @@ app.post('/server/toggle', async (req, res) => {
 app.get('/report',checkAuthenticated, async (req, res) => {
   const db = getDB();
   const currentYear = new Date().getFullYear();
+  // console.log(req.session.adminDetails.discipline);
+const userDiscipline = req.session.adminDetails.discipline || null;
+// console.log(userDiscipline);
+const userBranch = req.session.adminDetails.branch_name || null;
+// console.log(userBranch);
+  let branchId = null;
+    if (userBranch) {
+      const branchResult = await db.query(
+        'SELECT branch_id FROM branchnew WHERE branch_name = $1',
+        [userBranch]
+      );
+      branchId = branchResult.rows.length ? branchResult.rows[0].branch_id : null;
+    }
+    console.log(branchId);
+
   console.log(currentYear);
   try {
     const facultyId = req.query.facultyId || '';
     const feedbackYear = req.query.feedbackYear || currentYear; // Capture feedback year from query
 
     // Fetch all faculties for the dropdown
-    const facultiesResult = await db.query('SELECT id, name FROM faculty');
+    let facultiesQuery = 'SELECT id, name FROM faculty';
+    const queryParams1 = [];
+    if (branchId) {
+      facultiesQuery += ' WHERE branch_id = $1';
+      queryParams1.push(branchId);
+    }
+    const facultiesResult = await db.query(facultiesQuery, queryParams1);
     const faculties = facultiesResult.rows;
 
     // Construct the query to fetch feedback data including faculty name
@@ -1162,11 +1199,27 @@ app.get('/report',checkAuthenticated, async (req, res) => {
 
     let feedbackResult;
     const queryParams = [];
+    // console.log(userDiscipline);
+    if (userDiscipline) {
+      console.log(userDiscipline);
+      queryParams.push(userDiscipline);
+      
+      feedbackQuery += ` WHERE f.discipline_id = $${queryParams.length}`;
+
+    }
+
+    if (branchId) {
+      queryParams.push(branchId);
+      console.log(branchId);
+      feedbackQuery += queryParams.length > 1 ? ` AND` : ` WHERE`;
+      feedbackQuery += ` f.branch_id = $${queryParams.length}`;
+    }
     
     // Filter by faculty and feedback year if provided
     if (facultyId) {
       queryParams.push(facultyId);
-      feedbackQuery += ` WHERE f.fac_id = $${queryParams.length}`;
+      feedbackQuery += queryParams.length > 1 ? ` AND` : ` WHERE`;
+      feedbackQuery += ` f.fac_id = $${queryParams.length}`;
     }
 
     if (feedbackYear) {
@@ -1176,6 +1229,7 @@ app.get('/report',checkAuthenticated, async (req, res) => {
     }
 
     feedbackQuery += ` GROUP BY f.year, f.section, f.branch,f.subject, fac.name ORDER BY f.year, f.section`;
+    console.log(feedbackQuery);
 
     feedbackResult = await db.query(feedbackQuery, queryParams);
     
@@ -1195,13 +1249,30 @@ app.get('/report',checkAuthenticated, async (req, res) => {
 app.get('/teacher-remarks',checkAuthenticated, async (req, res) => {
   const db = getDB();
   const currentYear = new Date().getFullYear();
+  const userDiscipline = req.session.adminDetails.discipline || null;
+// console.log(userDiscipline);
+const userBranch = req.session.adminDetails.branch_name || null;
+  let branchId = null;
+  if (userBranch) {
+    const branchResult = await db.query(
+      'SELECT branch_id FROM branchnew WHERE branch_name = $1',
+      [userBranch]
+    );
+    branchId = branchResult.rows.length ? branchResult.rows[0].branch_id : null;
+  }
 
   try {
     const facultyId = req.query.facultyId || '';
     const feedbackYear = req.query.feedbackYear || currentYear;
 
     // Fetch all faculties for the dropdown
-    const facultiesResult = await db.query('SELECT id, name FROM faculty');
+    let facultiesQuery = 'SELECT id, name FROM faculty';
+    const queryParams1 = [];
+    if (branchId) {
+      facultiesQuery += ' WHERE branch_id = $1';
+      queryParams1.push(branchId);
+    }
+    const facultiesResult = await db.query(facultiesQuery, queryParams1);
     const faculties = facultiesResult.rows;
 
     // Construct the query to fetch remarks data
@@ -1219,9 +1290,26 @@ app.get('/teacher-remarks',checkAuthenticated, async (req, res) => {
     const queryParams = [];
 
     // Filter by faculty and year if provided
+    if (userDiscipline) {
+      console.log(userDiscipline);
+      queryParams.push(userDiscipline);
+      
+      feedbackQuery += ` WHERE f.discipline_id = $${queryParams.length}`;
+
+    }
+
+    if (branchId) {
+      queryParams.push(branchId);
+      console.log(branchId);
+      feedbackQuery += queryParams.length > 1 ? ` AND` : ` WHERE`;
+      feedbackQuery += ` f.branch_id = $${queryParams.length}`;
+    }
+    
+    // Filter by faculty and feedback year if provided
     if (facultyId) {
       queryParams.push(facultyId);
-      feedbackQuery += ` WHERE f.fac_id = $${queryParams.length}`;
+      feedbackQuery += queryParams.length > 1 ? ` AND` : ` WHERE`;
+      feedbackQuery += ` f.fac_id = $${queryParams.length}`;
     }
 
     if (feedbackYear) {

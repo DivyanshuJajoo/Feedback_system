@@ -94,7 +94,13 @@ export default class UserController {
               return res.render("dashboard",{feedbacks});
             }
             else if(user.role == "admin"){
-              return res.render('collegeDetails');
+              req.session.adminDetails = {
+                discipline: user.discipline_id,
+                branch_name: user.branch_name,
+              };
+              console.log(req.session.adminDetails);
+              return res.render("collegeDetails", { discipline: user.discipline_id, branch_name: user.branch_name });
+            
             }
     });
    
