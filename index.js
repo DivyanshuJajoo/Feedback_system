@@ -348,29 +348,87 @@ app.post("/signup", async(req, res) => {
   // res.render('login')
 });
 //subjects
-
-app.get('/subjects',checkAuthenticated, async (req, res) => {
+app.get('/subjects', checkAuthenticated, async (req, res) => {
   const db = getDB();
+  const user = req.user; // Get the authenticated user's details
+  const userDisciplineId = req.session.adminDetails.discipline || null;
+  // console.log(userDiscipline);
+  const userBranch = req.session.adminDetails.branch_name || null;
+    let userBranchId = null;
+    if (userBranch) {
+      const branchResult = await db.query(
+        'SELECT branch_id FROM branchnew WHERE branch_name = $1',
+        [userBranch]
+      );
+      userBranchId = branchResult.rows.length ? branchResult.rows[0].branch_id : null;
+    }
+
   try {
-    const disciplinesResult = await db.query('SELECT * FROM discipline');
-    console.log(disciplinesResult);
-    const branchesResult = await db.query("SELECT * FROM branchnew");
-    const subjectsResult = await db.query(`
-       SELECT s.subject_id, s.name, d.name AS discipline_name, b.branch_name
-      FROM subjectnew s
-      JOIN branchnew b ON s.branch_id = b.branch_id
-      JOIN discipline d ON b.discipline_id = d.id
-    `);
+    let disciplinesResult = [];
+    let branchesResult = [];
+    let subjectsResult = [];
+
+    if (userDisciplineId && userBranchId) {
+      // Fetch data only for the user's discipline and branch
+      disciplinesResult = await db.query('SELECT * FROM discipline WHERE id = $1', [userDisciplineId]);
+      branchesResult = await db.query('SELECT * FROM branchnew WHERE branch_id = $1', [userBranchId]);
+      subjectsResult = await db.query(`
+        SELECT s.subject_id, s.name, d.name AS discipline_name, b.branch_name
+        FROM subjectnew s
+        JOIN branchnew b ON s.branch_id = b.branch_id
+        JOIN discipline d ON b.discipline_id = d.id
+        WHERE d.id = $1 AND b.branch_id = $2
+      `, [userDisciplineId, userBranchId]);
+    } else if (userDisciplineId) {
+      // User has only discipline; show all branches and subjects for that discipline
+      disciplinesResult = await db.query('SELECT * FROM discipline WHERE id = $1', [userDisciplineId]);
+      branchesResult = await db.query('SELECT * FROM branchnew WHERE discipline_id = $1', [userDisciplineId]);
+      subjectsResult = await db.query(`
+        SELECT s.subject_id, s.name, d.name AS discipline_name, b.branch_name
+        FROM subjectnew s
+        JOIN branchnew b ON s.branch_id = b.branch_id
+        JOIN discipline d ON b.discipline_id = d.id
+        WHERE d.id = $1
+      `, [userDisciplineId]);
+    } else if (userBranchId) {
+      // User has only branch; show all disciplines and subjects for that branch
+      branchesResult = await db.query('SELECT * FROM branchnew WHERE branch_id = $1', [userBranchId]);
+      disciplinesResult = await db.query(`
+        SELECT * FROM discipline WHERE id IN (
+          SELECT discipline_id FROM branchnew WHERE branch_id = $1
+        )
+      `, [userBranchId]);
+      subjectsResult = await db.query(`
+        SELECT s.subject_id, s.name, d.name AS discipline_name, b.branch_name
+        FROM subjectnew s
+        JOIN branchnew b ON s.branch_id = b.branch_id
+        JOIN discipline d ON b.discipline_id = d.id
+        WHERE b.branch_id = $1
+      `, [userBranchId]);
+    } else {
+      // Both discipline_id and branch_id are null; show all data
+      disciplinesResult = await db.query('SELECT * FROM discipline');
+      branchesResult = await db.query('SELECT * FROM branchnew');
+      subjectsResult = await db.query(`
+        SELECT s.subject_id, s.name, d.name AS discipline_name, b.branch_name
+        FROM subjectnew s
+        JOIN branchnew b ON s.branch_id = b.branch_id
+        JOIN discipline d ON b.discipline_id = d.id
+      `);
+    }
+
+    // Render the page with the results
     res.render('subjects', {
-      disciplines: disciplinesResult.rows,
-      branches: branchesResult.rows,
-      subjects: subjectsResult.rows,
+      disciplines: disciplinesResult.rows, // Disciplines based on the user's data
+      branches: branchesResult.rows, // Branches based on the user's data
+      subjects: subjectsResult.rows, // Subjects based on the user's data
     });
   } catch (err) {
     console.error(err);
     res.send("Error " + err);
   }
 });
+
 
 app.post('/subjects/add', async (req, res) => {
   const db = getDB();
@@ -644,30 +702,102 @@ app.post('/branches/delete/:branch_id', async (req, res) => {
 
 //branch
 // Route to display the faculty page
-app.get('/faculty',checkAuthenticated, async (req, res) => {
+app.get('/faculty', checkAuthenticated, async (req, res) => {
   const db = getDB();
+  const user = req.user; // Get authenticated user's details
+  const userDisciplineId = req.session.adminDetails.discipline || null;
+  // console.log(userDiscipline);
+  const userBranch = req.session.adminDetails.branch_name || null;
+    let userBranchId = null;
+    if (userBranch) {
+      const branchResult = await db.query(
+        'SELECT branch_id FROM branchnew WHERE branch_name = $1',
+        [userBranch]
+      );
+      userBranchId = branchResult.rows.length ? branchResult.rows[0].branch_id : null;
+    }
+
   try {
+    let disciplines = [];
+    let branches = [];
+    let faculties = [];
 
-    
-    
-    // Fetch all disciplines
-    const disciplinesResult = await db.query('SELECT * FROM discipline');
-    const disciplines = disciplinesResult.rows;
+    if (userDisciplineId && userBranchId) {
+      // Fetch data only for user's discipline and branch
+      disciplines = (await db.query('SELECT * FROM discipline WHERE id = $1', [userDisciplineId])).rows;
+      branches = (await db.query(
+        `SELECT b.*, d.name AS discipline_name 
+         FROM branchnew b 
+         JOIN discipline d ON b.discipline_id = d.id 
+         WHERE b.branch_id = $1`,
+        [userBranchId]
+      )).rows;
+      faculties = (await db.query(
+        `SELECT f.* 
+         FROM faculty f 
+         JOIN branchnew b ON f.branch_id = b.branch_id 
+         WHERE b.branch_id = $1`,
+        [userBranchId]
+      )).rows;
+    } else if (userDisciplineId) {
+      // User has only discipline; fetch branches and faculties under this discipline
+      disciplines = (await db.query('SELECT * FROM discipline WHERE id = $1', [userDisciplineId])).rows;
+      branches = (await db.query(
+        `SELECT b.*, d.name AS discipline_name 
+         FROM branchnew b 
+         JOIN discipline d ON b.discipline_id = d.id 
+         WHERE d.id = $1`,
+        [userDisciplineId]
+      )).rows;
+      faculties = (await db.query(
+        `SELECT f.* 
+         FROM faculty f 
+         JOIN branchnew b ON f.branch_id = b.branch_id 
+         JOIN discipline d ON b.discipline_id = d.id 
+         WHERE d.id = $1`,
+        [userDisciplineId]
+      )).rows;
+    } else if (userBranchId) {
+      // User has only branch; fetch discipline and faculties under this branch
+      branches = (await db.query(
+        `SELECT b.*, d.name AS discipline_name 
+         FROM branchnew b 
+         JOIN discipline d ON b.discipline_id = d.id 
+         WHERE b.branch_id = $1`,
+        [userBranchId]
+      )).rows;
+      disciplines = (await db.query(
+        `SELECT * 
+         FROM discipline 
+         WHERE id IN (SELECT discipline_id FROM branchnew WHERE branch_id = $1)`,
+        [userBranchId]
+      )).rows;
+      faculties = (await db.query(
+        `SELECT f.* 
+         FROM faculty f 
+         JOIN branchnew b ON f.branch_id = b.branch_id 
+         WHERE b.branch_id = $1`,
+        [userBranchId]
+      )).rows;
+    } else {
+      // Both discipline_id and branch_id are null; fetch all data
+      disciplines = (await db.query('SELECT * FROM discipline')).rows;
+      branches = (await db.query(
+        `SELECT b.*, d.name AS discipline_name 
+         FROM branchnew b 
+         JOIN discipline d ON b.discipline_id = d.id`
+      )).rows;
+      faculties = (await db.query('SELECT * FROM faculty')).rows;
+    }
 
-    // Fetch all branches
-    const branchesResult = await db.query("SELECT b.*, d.name AS discipline_name FROM branchnew b JOIN discipline d ON b.discipline_id = d.id");
-    const branches = branchesResult.rows;
-
-    // Fetch all faculties
-    const facultiesResult = await db.query('SELECT * FROM faculty');
-    const faculties = facultiesResult.rows;
-
+    // Render the page with fetched data
     res.render('faculty', { disciplines, branches, faculties });
   } catch (err) {
     console.error(err);
     res.send("Error " + err);
   }
 });
+
 
 // Route to add a faculty
 app.post('/faculty/add', async (req, res) => {
