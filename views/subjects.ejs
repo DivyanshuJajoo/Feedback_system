@@ -7,10 +7,10 @@
     <meta name="author" content="">
 
     <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/assets/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="/assets/css/style.css" rel="stylesheet">
 
-    <title>Manage Subjects</title>
+    <title>Manage Disciplines</title>
 
     <style>
         body {
@@ -18,63 +18,85 @@
             margin: 0;
             padding: 0;
             color: #333;
-            background-color: #f8f9fa;
+            background-color: #eef2f7;
         }
 
         .sidebar {
             position: fixed;
             top: 0;
             left: 0;
-            width: 200px;
+            width: 240px;
             height: 100%;
-            background-color: #222;
+            background-color: #1a1a2e;
             color: #fff;
-            padding: 10px;
+            padding: 20px;
             box-sizing: border-box;
+        }
+
+        .sidebar h4 {
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #9850E4;
+            text-transform: uppercase;
         }
 
         .sidebar a {
             display: block;
-            padding: 10px;
-            color: #fff;
+            padding: 12px;
+            color: #ffffff;
             text-decoration: none;
             margin-bottom: 10px;
             border-radius: 4px;
+            transition: background 0.3s;
         }
 
         .sidebar a:hover {
-            background-color: #495057;
+            background-color: #9850E4;
+            color: #1a1a2e;
         }
 
         .main {
-            margin-left: 220px;
+            margin-left: 240px;
             padding: 20px;
+        }
+        .main h1 {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1a1a2e;
+            margin-bottom: 20px;
         }
 
         .form-control, .btn {
             margin-bottom: 15px;
         }
 
-        .btn-primary, .btn-secondary, .btn-danger {
-            margin-right: 10px;
+        .btn-primary {
+            background-color: #9850E4;
+            border-color: #9850E4;
+            color: #fff;
         }
 
-        .btn-primary {
-            background-color: #007bff;
+        .btn-primary:hover {
+            background-color: #9850E4;
+            border-color: #9850E4;
         }
 
         .btn-secondary {
-            background-color: #6c757d;
+            background-color: #34495e;
+            border-color: #34495e;
         }
 
         .btn-danger {
-            background-color: #dc3545;
+            background-color: #e74c3c;
+            border-color: #e74c3c;
         }
 
         .card {
             margin-top: 20px;
             padding: 20px;
-            background-color: #fff;
+            background-color: #ffffff;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
@@ -96,40 +118,27 @@
         }
 
         tr:nth-child(even) {
-            background-color: #f2f2f2;
+            background-color: #ecf0f1;
         }
 
         tr:hover {
-            background-color: #e9ecef;
-        }
-
-        .table-actions {
-            display: flex;
-            align-items: center;
-        }
-
-        .table-actions form {
-            margin: 0;
-        }
-
-        .table-actions a {
-            margin-left: 10px;
+            background-color: #d5dbdb;
         }
     </style>
 </head>
 <body>
 <div class="sidebar">
-    <a href="#">Admin</a>
-    <a href="/admin">Dashboard</a>
-    <a href="/collegeDetails">College Details</a>
-    <a href="/discipline">Discipline</a>
-    <a href="/branches">Branches</a>
-    <a href="/subjects">Subjects</a>
-    <a href="/faculty">Faculty</a>
-    <a href="/mapping">Mapping</a>
-    <a href="/server">Server</a>
-    <a href="/report">Report</a>
-    <a href="/teacher-remarks">Faculty Remarks</a>
+    <h4>Admin Panel</h4>
+    <a href="/admin"><i class="fas fa-home"></i> Dashboard</a>
+    <a href="/collegeDetails"><i class="fas fa-building"></i> College Details</a>
+    <a href="/discipline"><i class="fas fa-book"></i> Discipline</a>
+    <a href="/branches"><i class="fas fa-code-branch"></i> Branches</a>
+    <a href="/subjects"><i class="fas fa-book-open"></i> Subjects</a>
+    <a href="/faculty"><i class="fas fa-user-tie"></i> Faculty</a>
+    <a href="/mapping"><i class="fas fa-map"></i> Mapping</a>
+    <a href="/server"><i class="fas fa-server"></i> Server</a>
+    <a href="/report"><i class="fas fa-chart-line"></i> Report</a>
+    <a href="/teacher-remarks"><i class="fas fa-comment"></i> Faculty Remarks</a>
     <form action="/logout?_method=DELETE" method="POST" style="display:inline;">
         <button type="submit" class="btn btn-danger">Logout</button>
     </form>
@@ -200,9 +209,9 @@
                         <td><%= subject.branch_name %></td>
                         <td><%= subject.name %></td>
                         <td class="table-actions">
-                            <form action="/subjects/delete/<%= subject.subject_id %>" method="POST" style="display:inline;">
+                            <!-- <form action="/subjects/delete/<%= subject.subject_id %>" method="POST" style="display:inline;">
                                 <button type="submit" class="btn btn-danger">Delete</button>
-                            </form>
+                            </form> -->
                             <a href="/subjects/edit/<%= subject.subject_id %>" class="btn btn-secondary">Edit</a>
                         </td>
                     </tr>
