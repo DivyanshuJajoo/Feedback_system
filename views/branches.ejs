@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/assets/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="/assets/css/style.css" rel="stylesheet">
     <title>Admin Page - Discipline Management</title>
 
@@ -20,25 +20,36 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 220px;
+            width: 240px;
             height: 100%;
-            background-color: #222;
+            background-color: #1a1a2e;
             color: #fff;
             padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .sidebar h4 {
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #9850E4;
+            text-transform: uppercase;
         }
 
         .sidebar a {
             display: block;
-            padding: 10px 15px;
-            color: #fff;
+            padding: 12px;
+            color: #ffffff;
             text-decoration: none;
-            margin: 5px 0;
+            margin-bottom: 10px;
             border-radius: 4px;
             transition: background 0.3s;
         }
 
         .sidebar a:hover {
-            background-color: #444;
+            background-color: #9850E4;
+            color: #1a1a2e;
         }
 
         /* .sidebar .btn-danger {
@@ -48,7 +59,7 @@
         } */
 
         .main {
-            margin-left: 240px;
+            margin-left: 260px;
             padding: 20px;
             background-color: #f9f9f9;
             min-height: 100vh;
@@ -72,7 +83,7 @@
         .tab.active {
             background-color: #fff;
             font-weight: bold;
-            border-bottom: 2px solid #007bff;
+            border-bottom: 2px solid #9850E4;
         }
 
         .tab-content {
@@ -95,7 +106,7 @@
         }
 
         form button {
-            background-color: #007bff;
+            background-color: #9850E4;
             color: #fff;
             border: none;
             padding: 10px 15px;
@@ -104,7 +115,15 @@
         }
 
         form button:hover {
-            background-color: #0056b3;
+            background-color: #9850E4;
+        }
+        .main h1,h2 {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1a1a2e;
+            margin-bottom: 20px;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            
         }
 
         table {
@@ -145,25 +164,34 @@
         .btn-danger:hover {
             background-color: #c82333;
         }
+        .btn-danger{
+          border-radius: 8px;
+        }
+        .btn-danger:hover{
+          background-color:white;
+          font-weight: bold;
+          border-color:#9850E4;
+          color:#9850E4;
+        }
     </style>
 </head>
 <body>
-<div class="sidebar">
-    <a href="#">Admin</a>
-    <a href="/admin">Dashboard</a>
-    <a href="/collegeDetails">College Details</a>
-    <a href="/discipline">Discipline</a>
-    <a href="/branches">Branches</a>
-    <a href="/subjects">Subjects</a>
-    <a href="/faculty">Faculty</a>
-    <a href="/mapping">Mapping</a>
-    <a href="/server">Server</a>
-    <a href="/report">Report</a>
-    <a href="/teacher-remarks">Faculty Remarks</a>
-    <form action="/logout?_method=DELETE" method="POST" style="display:inline;">
-        <button type="submit" class="btn btn-danger">Logout</button>
-    </form>
-</div>
+    <div class="sidebar">
+        <h4>Admin Panel</h4>
+        <a href="/admin"><i class="fas fa-home"></i> Dashboard</a>
+        <a href="/collegeDetails"><i class="fas fa-building"></i> College Details</a>
+        <a href="/discipline"><i class="fas fa-book"></i> Discipline</a>
+        <a href="/branches"><i class="fas fa-code-branch"></i> Branches</a>
+        <a href="/subjects"><i class="fas fa-book-open"></i> Subjects</a>
+        <a href="/faculty"><i class="fas fa-user-tie"></i> Faculty</a>
+        <a href="/mapping"><i class="fas fa-map"></i> Mapping</a>
+        <a href="/server"><i class="fas fa-server"></i> Server</a>
+        <a href="/report"><i class="fas fa-chart-line"></i> Report</a>
+        <a href="/teacher-remarks"><i class="fas fa-comment"></i> Faculty Remarks</a>
+        <form action="/logout?_method=DELETE" method="POST" style="display:inline;">
+            <button type="submit" class="btn btn-danger">Logout</button>
+        </form>
+    </div>
 
 <div class="main">
     <div class="tabs">
@@ -191,7 +219,7 @@
                     <th>Discipline</th>
                     <th>Branch Name</th>
                     <th>Branch ID</th>
-                    <th>Actions</th>
+                    <!-- <th>Actions</th> -->
                 </tr>
             </thead>
             <tbody>
@@ -201,11 +229,11 @@
                             <td><%= branch.discipline_name %></td>
                             <td><%= branch.branch_name %></td>
                             <td><%= branch.branch_id%></td>
-                            <td>
+                            <!-- <td>
                                 <form action="/branches/delete/<%= branch.branch_id %>" method="post" style="display:inline;">
                                     <button type="submit" class="btn btn-danger">Delete</button>
                                 </form>
-                            </td>
+                            </td> -->
                         </tr>
                     <% }) %>
                 <% } else { %>
