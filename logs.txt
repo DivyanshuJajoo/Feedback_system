@@ -5068,3 +5068,11 @@
 {"level":"info","message":"/api/user/login-{\"username\":\"111\",\"password\":\"12345\"}","service":"request-logging"}
 {"level":"info","message":"/report-{}","service":"request-logging"}
 {"level":"info","message":"/report?facultyId=&feedbackYear=2024-{}","service":"request-logging"}
+{"level":"info","message":"/-{}","service":"request-logging"}
+{"level":"info","message":"/api/user/login-{\"username\":\"0\",\"password\":\"12345\"}","service":"request-logging"}
+{"level":"info","message":"/logout?_method=DELETE-{}","service":"request-logging"}
+{"level":"info","message":"/discipline-{}","service":"request-logging"}
+{"level":"info","message":"/-{}","service":"request-logging"}
+{"level":"info","message":"/favicon.ico-{}","service":"request-logging"}
+{"level":"info","message":"/api/user/login-{\"username\":\"0\",\"password\":\"12345\"}","service":"request-logging"}
+{"level":"info","message":"/admin-{}","service":"request-logging"}
