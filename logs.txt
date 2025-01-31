@@ -5423,3 +5423,15 @@
 {"level":"info","message":"/report?facultyId=7&feedbackYear=2025-{}","service":"request-logging"}
 {"level":"info","message":"/report?facultyId=&feedbackYear=2025-{}","service":"request-logging"}
 {"level":"info","message":"/admin-{}","service":"request-logging"}
+{"level":"info","message":"/-{}","service":"request-logging"}
+{"level":"info","message":"/api/user/login-{\"username\":\"0\",\"password\":\"12345\"}","service":"request-logging"}
+{"level":"info","message":"/admin-{}","service":"request-logging"}
+{"level":"info","message":"/discipline-{}","service":"request-logging"}
+{"level":"info","message":"/branches-{}","service":"request-logging"}
+{"level":"info","message":"/subjects-{}","service":"request-logging"}
+{"level":"info","message":"/faculty-{}","service":"request-logging"}
+{"level":"info","message":"/mapping-{}","service":"request-logging"}
+{"level":"info","message":"/server-{}","service":"request-logging"}
+{"level":"info","message":"/report-{}","service":"request-logging"}
+{"level":"info","message":"/teacher-remarks-{}","service":"request-logging"}
+{"level":"info","message":"/admin-{}","service":"request-logging"}
