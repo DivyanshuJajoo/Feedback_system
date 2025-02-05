@@ -25,6 +25,7 @@ function checkAuthenticated(req,res,next){
   res.render('login',{message: 'Welcome to login page'})
 }
 
+
 // userRoute.post("/feedback", (req,res) => {
 //   userController.feedback(req,res);
 // } )

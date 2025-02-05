@@ -83,6 +83,7 @@ var corsOptions = {
 };
 app.use(cors(corsOptions));
 
+
 app.use(express.json());
 app.use((err, res, req, next) => {
   console.log(err);
@@ -1093,31 +1094,53 @@ app.get('/mapping',checkAuthenticated, async (req, res) => {
 app.post('/api/mapping/studentSubject', async (req, res) => {
   const db = getDB();
 
-  // Check if a file was uploaded
   if (!req.files || Object.keys(req.files).length === 0) {
     return res.status(400).send('No files were uploaded.');
   }
 
-  const studentFile = req.files.studentFile; // Name should match the input field name in the form
+  const studentFile = req.files.studentFile;
   const uploadPath = path.join(__dirname, 'uploads', studentFile.name);
 
-  // Move the uploaded file to the server's upload folder
   studentFile.mv(uploadPath, async (err) => {
     if (err) {
       return res.status(500).send(err);
     }
 
     try {
-      // Read the uploaded Excel file
       const workbook = xlsx.readFile(uploadPath);
       const sheetName = workbook.SheetNames[0];
       const sheet = workbook.Sheets[sheetName];
       const data = xlsx.utils.sheet_to_json(sheet);
 
-      // Debugging: log the uploaded data
       console.log('Uploaded Data:', data);
 
-      // Prepare the data for insertion
+      // Extract unique subject IDs from the file
+      const subjectIds = new Set();
+      data.forEach(item => {
+        subjectIds.add(item['Subject 1']);
+        subjectIds.add(item['Subject 2']);
+        subjectIds.add(item['Subject 3']);
+        subjectIds.add(item['Subject 4']);
+        subjectIds.add(item['Subject 5']);
+      });
+
+      // Remove any undefined/null values
+      const validSubjectIds = Array.from(subjectIds).filter(id => id);
+      // console.log(validSubjectIds);
+
+      // Fetch subject names from subjectnew table
+      const subjectsMap = {};
+      if (validSubjectIds.length > 0) {
+        const query = `SELECT subject_id, name FROM subjectnew WHERE subject_id = ANY($1)`;
+        const { rows } = await db.query(query, [validSubjectIds]);
+        // console.log(rows);
+        rows.forEach(row => {
+          subjectsMap[row.subject_id] = row.name;
+        });
+      }
+      // console.log(subjectsMap);
+
+      // Prepare data for insertion
       const studentSubjectData = data.map(item => ({
         unique_id: item.unique_id,
         name: item.Name,
@@ -1126,21 +1149,20 @@ app.post('/api/mapping/studentSubject', async (req, res) => {
         section: item.Section,
         discipline_id: item['Discipline ID'],
         semester: item.Semester,
-        subject_1: item['Subject 1'],
-        subject_2: item['Subject 2'],
-        subject_3: item['Subject 3'],
-        subject_4: item['Subject 4'],
-        subject_5: item['Subject 5']
+        subject_1: subjectsMap[item['Subject 1']] || null,
+        subject_2: subjectsMap[item['Subject 2']] || null,
+        subject_3: subjectsMap[item['Subject 3']] || null,
+        subject_4: subjectsMap[item['Subject 4']] || null,
+        subject_5: subjectsMap[item['Subject 5']] || null
       }));
 
-      // Prepare the query and values
+      // Insert data into the database
       const query = `
         INSERT INTO student_subject 
         (unique_id, name, branch_name, year, section, discipline_id, semester, subject_1, subject_2, subject_3, subject_4, subject_5)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
       `;
 
-      // Iterate over the studentSubjectData and insert each row
       for (const item of studentSubjectData) {
         const values = [
           item.unique_id,
@@ -1157,14 +1179,10 @@ app.post('/api/mapping/studentSubject', async (req, res) => {
           item.subject_5
         ];
 
-        // Insert the values into the database
         await db.query(query, values);
       }
 
-      // Delete the uploaded file after processing
       fs.unlinkSync(uploadPath);
-
-      // Send success response
       res.status(200).send('Student-subject data uploaded successfully.');
     } catch (err) {
       console.error('Error processing the file:', err);
@@ -1172,6 +1190,7 @@ app.post('/api/mapping/studentSubject', async (req, res) => {
     }
   });
 });
+
 
 // Route to fetch the student-subject mappings for the table
 app.get('/api/mapping/studentSubject',checkAuthenticated, async (req, res) => {
@@ -1498,14 +1517,9 @@ app.get('/dashboard',checkAuthenticated, (req, res) => {
 
 // Logout route
 // Disable caching for authenticated pages
-app.use((req, res, next) => {
-  if (req.isAuthenticated()) {
-    // Ensure that authenticated pages are not cached
-    res.set('Cache-Control', 'no-store');
-    res.set('Pragma', 'no-cache');
-    res.set('Expires', '0');
-  }
-  next();
+app.use(function (req, res, next) {
+  res.set('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+    next();
 });
 
 function checkNotAuthenticated(req,res,next){
@@ -1525,36 +1539,43 @@ function checkAuthenticated(req,res,next){
   res.render('login',{message: 'Welcome to login page'})
 }
 app.delete("/logout", (req, res, next) => {
-  req.logout((err) => {
-    if (err) {
-      return next(err); // Handle errors from req.logout()
-    }
-    
-    // Destroy session and clear cookies
-    req.session.destroy((err) => {
+  if(req.isAuthenticated()){
+    req.logout((err) => {
       if (err) {
-        console.log('Error destroying session:', err);
-        return next(err);
+        return next(err); // Handle errors from req.logout()
       }
+    
+      
+      // Destroy session and clear cookies
+      req.session.destroy((err) => {
+        if (err) {
+          console.log('Error destroying session:', err);
+          return next(err);
+        }
 
-      // Clear the session cookie
-      res.clearCookie('connect.sid', {
-        path: '/',
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+        // Clear the session cookie
+        res.clearCookie('connect.sid', {
+          path: '/',
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+        });
+
+        // Prevent caching of the previous session page
+        res.set('Cache-Control', 'no-store');
+        res.set('Pragma', 'no-cache');
+        res.set('Expires', '0');
+
+        // Render login page with a message
+        res.render('login', {
+          message: 'Logged Out Successfully.' // Pass the message to the login page
+        });
+      
       });
 
-      // Prevent caching of the previous session page
-      res.set('Cache-Control', 'no-store');
-      res.set('Pragma', 'no-cache');
-      res.set('Expires', '0');
-
-      // Render login page with a message
-      res.render('login', {
-        message: 'Logged Out Successfully.' // Pass the message to the login page
-      });
     });
-  });
+  }else{
+    res.redirect("/");
+  }
 });
 
 
@@ -1570,6 +1591,9 @@ app.use((req, res) => {
 // passport.deserializeUser((user, cb) => {
 //   cb(null, user);
 // });
+app.get("*",(req,res)=>{
+  res.redirect("/");
+})
 
 app.listen(port, () => {
   console.log(`Server is running at ${port}`);

@@ -9,16 +9,17 @@
     <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="/assets/css/style.css" rel="stylesheet">
+    <link href="/assets/css/styles2.css" rel="stylesheet">
 
     <title>Admin Page</title>
 
     <style>
-        body {
+        /* body {
            font-family: Arial, sans-serif;
            margin: 0;
            padding: 0;
            color: #ddd;
-           background: linear-gradient(135deg, #1a1a2e, #16213e);
+           background:  #1c1c25;
         }
         
         .sidebar {
@@ -27,7 +28,7 @@
             left: 0;
             width: 240px;
             height: 100%;
-            background-color: #0f3460;
+            background-color: rgba(255, 255, 255, 0.1);
             color: #fff;
             padding: 20px;
             box-sizing: border-box;
@@ -39,7 +40,7 @@
             font-size: 22px;
             font-weight: bold;
             margin-bottom: 20px;
-            color: #9850E4;
+            color: #BB86FC;
             text-transform: uppercase;
         }
 
@@ -54,7 +55,7 @@
         }
 
         .sidebar a:hover {
-            background-color: #9850E4;
+            background-color:#BB86FC;
             color: #1a1a2e;
         }
 
@@ -79,7 +80,7 @@
            background: rgba(255, 255, 255, 0.1);
            padding: 20px;
            border-radius: 10px;
-           box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+           box-shadow: 0 4px 8px rgba(5, 5, 5, 0.3);
            text-decoration: none;
            color: #fff;
            height: 200px;
@@ -117,9 +118,9 @@
         .btn-danger:hover {
           background-color: white;
           font-weight: bold;
-          border-color: #9850E4;
-          color: #9850E4;
-        }
+          border-color: #BB86FC;
+          color: #BB86FC;
+        } */
     </style>
   </head>
   <body>
@@ -142,38 +143,39 @@
       <h1>Welcome</h1>
       <div class="dashboard">
         <a href="/discipline" class="card">
-          <img src="assets/images/admin.png" alt="Dashboard">
+          <img src="/assets/images/admin.png" alt="Dashboard">
           <p>Add Discipline</p>
         </a>
         <a href="/branches" class="card">
-          <img src="assets/images/branch.png" alt="Branches">
+          <img src="/assets/images/branch.png" alt="Branches">
           <p>Branches</p>
         </a>
         <a href="/subjects" class="card">
-          <img src="assets/images/subjects2.jpg" alt="Subjects">
+          <img src="/assets/images/subjects.png" alt="Subjects">
           <p>Subjects</p>
         </a>
         <a href="/faculty" class="card">
-          <img src="assets/images/faculty.png" alt="Faculty">
+          <img src="/assets/images/faculty.png" alt="Faculty">
           <p>Faculty</p>
         </a>
         <a href="/mapping" class="card">
-          <img src="assets/images/mapping.png" alt="Map">
+          <img src="/assets/images/mapping.png" alt="Map">
           <p>Map</p>
         </a>
         <a href="/server" class="card">
-          <img src="assets/images/server.png" alt="Server">
+          <img src="/assets/images/server.png" alt="Server">
           <p>Server</p>
         </a>
         <a href="/report" class="card">
-          <img src="assets/images/report.png" alt="Map">
+          <img src="/assets/images/report.png" alt="Map">
           <p>Report</p>
         </a>
         <a href="/teacher-remarks" class="card">
-          <img src="assets/images/remarks.png" alt="Map">
+          <img src="/assets/images/remarks.png" alt="Map">
           <p>Teacher Remarks</p>
         </a>
       </div>
     </div>
   </body>
+  <%- include('partials/footer') %>
 </html>
