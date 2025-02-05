@@ -6,24 +6,25 @@
     <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="/assets/css/style.css" rel="stylesheet">
+    <link href="/assets/css/styles2.css" rel="stylesheet">
     <title>Feedback Report</title>
 
     <style>
-        body {
+        /* body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
             color: #333;
             background-color: #f8f9fa;
-        }
+        } */
 
-        .sidebar {
+        /* .sidebar {
             position: fixed;
             top: 0;
             left: 0;
             width: 240px;
             height: 100%;
-            background-color: #1a1a2e;
+            background-color: rgba(255, 255, 255, 0.1);
             color: #fff;
             padding: 20px;
             box-sizing: border-box;
@@ -51,9 +52,9 @@
         .sidebar a:hover {
             background-color: #9850E4;
             color: #1a1a2e;
-        }
+        } */
 
-        .main {
+        /* .main {
             margin-left: 260px;
             padding: 20px;
         }
@@ -72,8 +73,8 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             margin-bottom: 20px;
             overflow: hidden;
-        }
-
+        } */
+/* 
         .filter-form {
             display: flex;
             align-items: center;
@@ -102,10 +103,10 @@
             font-size: 16px;
             cursor: pointer;
             border: none;
-        }
+        } */
 
-        .table-container {
-            max-height: 400px; /* Adjust as needed */
+        /* .table-container {
+            max-height: 400px; 
             overflow-y: auto;
             margin-top: 20px;
         }
@@ -140,8 +141,8 @@
         tr:hover {
             background-color: #e9ecef;
             transition: background-color 0.3s ease;
-        }
-
+        } */
+/* 
         .no-feedback {
             text-align: center;
             padding: 20px;
@@ -178,8 +179,8 @@
             margin-bottom: 10px;
             font-size: 16px;
             color: #333;
-        }
-        .btn-danger{
+        } */
+        /* .btn-danger{
           border-radius: 8px;
         }
         .btn-danger:hover{
@@ -187,14 +188,14 @@
           font-weight: bold;
           border-color:#9850E4;
           color:#9850E4;
-        }
+        } */
     </style>
 </head>
 <body>
     <div class="sidebar">
         <h4>Admin Panel</h4>
         <a href="/admin"><i class="fas fa-home"></i> Dashboard</a>
-        <a href="/collegeDetails"><i class="fas fa-building"></i> College Details</a>
+        <!-- <a href="/collegeDetails"><i class="fas fa-building"></i> College Details</a> -->
         <a href="/discipline"><i class="fas fa-book"></i> Discipline</a>
         <a href="/branches"><i class="fas fa-code-branch"></i> Branches</a>
         <a href="/subjects"><i class="fas fa-book-open"></i> Subjects</a>
@@ -227,7 +228,7 @@
                 </ul>
             </div>
             <form class="filter-form" action="/report" method="get">
-                <label for="facultyId">Select Faculty:</label>
+                <label1 for="facultyId">Select Faculty:</label1>
                 <select name="facultyId" id="facultyId">
                     <option value="" <%= !facultyId ? 'selected' : '' %>>All Faculties</option>
                     <% faculties.forEach(faculty => { %>
@@ -236,7 +237,7 @@
                         </option>
                     <% }) %>
                 </select>
-                <label for="feedbackYear">Select Year:</label>
+                <label1 for="feedbackYear">Select Year:</label1>
                 <select name="feedbackYear" id="feedbackYear">
                     <option value="2023" <%= feedbackYear == '2023' ? 'selected' : '' %>>2023</option>
                     <option value="2024" <%= feedbackYear == '2024' ? 'selected' : '' %>>2024</option>
@@ -309,4 +310,5 @@
             doc.save('Feedback_Report.pdf');
         });
 </script>
+<%- include('partials/footer') %>
 </html>

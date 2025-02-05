@@ -9,25 +9,26 @@
     <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="/assets/css/style.css" rel="stylesheet">
+    <link href="/assets/css/styles2.css" rel="stylesheet">
 
-    <title>Manage Disciplines</title>
+    <title>Manage Subject</title>
 
     <style>
-        body {
+        /* body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
             color: #333;
             background-color: #eef2f7;
-        }
+        } */
 
-        .sidebar {
+        /* .sidebar {
             position: fixed;
             top: 0;
             left: 0;
             width: 240px;
             height: 100%;
-            background-color: #1a1a2e;
+            background-color: rgba(255, 255, 255, 0.1);
             color: #fff;
             padding: 20px;
             box-sizing: border-box;
@@ -55,8 +56,8 @@
         .sidebar a:hover {
             background-color: #9850E4;
             color: #1a1a2e;
-        }
-
+        } */
+/* 
         .main {
             margin-left: 240px;
             padding: 20px;
@@ -134,14 +135,14 @@
           font-weight: bold;
           border-color:#9850E4;
           color:#9850E4;
-        }
+        } */
     </style>
 </head>
 <body>
 <div class="sidebar">
     <h4>Admin Panel</h4>
     <a href="/admin"><i class="fas fa-home"></i> Dashboard</a>
-    <a href="/collegeDetails"><i class="fas fa-building"></i> College Details</a>
+    <!-- <a href="/collegeDetails"><i class="fas fa-building"></i> College Details</a> -->
     <a href="/discipline"><i class="fas fa-book"></i> Discipline</a>
     <a href="/branches"><i class="fas fa-code-branch"></i> Branches</a>
     <a href="/subjects"><i class="fas fa-book-open"></i> Subjects</a>
@@ -204,7 +205,7 @@
 
     <div class="card">
         <h2>Subjects List</h2>
-        <table class="table">
+        <table>
             <thead>
                 <tr>
                     <th>Discipline</th>
@@ -223,7 +224,7 @@
                             <!-- <form action="/subjects/delete/<%= subject.subject_id %>" method="POST" style="display:inline;">
                                 <button type="submit" class="btn btn-danger">Delete</button>
                             </form> -->
-                            <a href="/subjects/edit/<%= subject.subject_id %>" class="btn btn-secondary">Edit</a>
+                            <a href="/subjects/edit/<%= subject.subject_id %>" class="btn btn-primary">Edit</a>
                         </td>
                     </tr>
                 <% }) %>
@@ -250,4 +251,5 @@
     });
 </script>
 </body>
+<%- include('partials/footer') %>
 </html>
