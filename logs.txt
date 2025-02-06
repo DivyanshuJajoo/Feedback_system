@@ -6075,3 +6075,5 @@
 {"level":"info","message":"/report-{}","service":"request-logging"}
 {"level":"info","message":"/report?facultyId=&feedbackYear=2024-{}","service":"request-logging"}
 {"level":"info","message":"/mapping-{}","service":"request-logging"}
+{"level":"info","message":"/-{}","service":"request-logging"}
+{"level":"info","message":"/favicon.ico-{}","service":"request-logging"}
