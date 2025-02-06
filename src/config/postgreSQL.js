@@ -4,7 +4,7 @@ const db = new pg.Client({
   user: 'postgres',
   host: 'localhost',
   database: 'Feedback',
-  password: 'Jajoo@2001',
+  password: '98265764',
   port: 5432,
 });
 export const connectToDB = () => {
