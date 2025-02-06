@@ -99,7 +99,7 @@ export default class UserController {
                 branch_name: user.branch_name,
               };
               console.log(req.session.adminDetails);
-              return res.render("admin", { discipline: user.discipline_id, branch_name: user.branch_name });
+              return res.render("collegeDetails", { discipline: user.discipline_id, branch_name: user.branch_name });
             
             }
     });

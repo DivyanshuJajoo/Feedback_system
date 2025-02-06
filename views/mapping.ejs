@@ -9,12 +9,11 @@
     <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="/assets/css/style.css" rel="stylesheet">
-    <link href="/assets/css/styles2.css" rel="stylesheet">
 
-    <title>Mapping</title>
+    <title>Admin Page</title>
 
     <style>
-        /* body {
+        body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
@@ -36,15 +35,15 @@
         .header img {
             max-width: 100%;
             height: auto;
-        } */
+        }
 
-        /* .sidebar {
+        .sidebar {
             position: fixed;
             top: 0;
             left: 0;
             width: 240px;
             height: 100%;
-            background-color: rgba(255, 255, 255, 0.1);
+            background-color: #1a1a2e;
             color: #fff;
             padding: 20px;
             box-sizing: border-box;
@@ -72,9 +71,9 @@
         .sidebar a:hover {
             background-color: #9850E4;
             color: #1a1a2e;
-        } */
+        }
 
-        /* .main {
+        .main {
             margin-left: 260px;
             padding: 20px;
         }
@@ -89,7 +88,7 @@
 
         .main h1, .main h2 {
             margin-top: 0;
-        } */
+        }
 
         .slider {
             display: flex;
@@ -254,7 +253,7 @@
     <div class="sidebar">
         <h4>Admin Panel</h4>
         <a href="/admin"><i class="fas fa-home"></i> Dashboard</a>
-        <!-- <a href="/collegeDetails"><i class="fas fa-building"></i> College Details</a> -->
+        <a href="/collegeDetails"><i class="fas fa-building"></i> College Details</a>
         <a href="/discipline"><i class="fas fa-book"></i> Discipline</a>
         <a href="/branches"><i class="fas fa-code-branch"></i> Branches</a>
         <a href="/subjects"><i class="fas fa-book-open"></i> Subjects</a>
@@ -274,9 +273,8 @@
         <button id="facultyMappingBtn">Faculty to Subject Mapping</button>
         <button id="studentMappingBtn">Student to Subject Mapping</button>
     </div>
-    
+
     <div id="semesterMapping" class="tab-content active">
-     <div class="card">
         <h1>Subject to Semester Mapping</h1>
         <h8>Note: Map subject to garbage semester value 11 if it need not be mapped to any semester.</h8>
         <form id="subjectSemesterForm" action="/mapping/subjectSemester" method="POST">
@@ -330,10 +328,8 @@
             </tbody>
         </table>
     </div>
-    </div>
 
     <div id="facultyMapping" class="tab-content">
-        <div class="card">
         <h1>Faculty to Subject Mapping</h1>
         <form id="facultySubjectForm" action="/mapping/facultySubject" method="POST">
             <div style="display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
@@ -394,7 +390,6 @@
             <% }); %>
             </tbody>
         </table>
-    </div>
     </div>
     <div id="studentMapping" class="tab-content">
         <div class="card">
@@ -553,5 +548,4 @@
 </script>
 
 </body>
-<%- include('partials/footer') %>
 </html>

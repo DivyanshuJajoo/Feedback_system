@@ -9,17 +9,15 @@
     <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="/assets/css/style.css" rel="stylesheet">
-    <link href="/assets/css/styles2.css" rel="stylesheet">
 
     <title>Admin Page</title>
 
     <style>
-        /* body {
+        body {
            font-family: Arial, sans-serif;
            margin: 0;
            padding: 0;
-           color: #ddd;
-           background:  #1c1c25;
+           color: #333;
         }
         
         .sidebar {
@@ -28,11 +26,10 @@
             left: 0;
             width: 240px;
             height: 100%;
-            background-color: rgba(255, 255, 255, 0.1);
+            background-color: #1a1a2e;
             color: #fff;
             padding: 20px;
             box-sizing: border-box;
-            box-shadow: 3px 0 10px rgba(0,0,0,0.2);
         }
 
         .sidebar h4 {
@@ -40,7 +37,7 @@
             font-size: 22px;
             font-weight: bold;
             margin-bottom: 20px;
-            color: #BB86FC;
+            color: #9850E4;
             text-transform: uppercase;
         }
 
@@ -55,9 +52,15 @@
         }
 
         .sidebar a:hover {
-            background-color:#BB86FC;
+            background-color: #9850E4;
             color: #1a1a2e;
         }
+
+        /* .sidebar .btn-danger {
+           width: 100%;
+           margin-top: 10px;
+           border-radius: 5px;
+        } */
 
         .main {
            margin-left: 260px;
@@ -66,8 +69,12 @@
         .main h1 {
             font-size: 28px;
             font-weight: bold;
-            color: #fff;
+            color: #1a1a2e;
             margin-bottom: 20px;
+        }
+        .header {
+           font-size: 2em;
+           margin-bottom: 20px;
         }
         
         .dashboard {
@@ -77,12 +84,12 @@
         }
         
         .card {
-           background: rgba(255, 255, 255, 0.1);
+           background-color: #f5f5f5;
            padding: 20px;
-           border-radius: 10px;
-           box-shadow: 0 4px 8px rgba(5, 5, 5, 0.3);
+           border-radius: 5px;
+           box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
            text-decoration: none;
-           color: #fff;
+           color: inherit;
            height: 200px;
            display: flex;
            flex-direction: column;
@@ -90,12 +97,11 @@
            justify-content: center;
            text-align: center;
            transition: transform 0.3s ease, box-shadow 0.3s ease;
-           backdrop-filter: blur(5px);
         }
         
         .card:hover {
            transform: translateY(-5px);
-           box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+           box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
 
         .card img {
@@ -110,23 +116,22 @@
            font-weight: bold;
         }
 
-        .btn-danger {
+        .btn-danger{
           border-radius: 8px;
-          background-color: #d9534f;
-          border: none;
         }
-        .btn-danger:hover {
-          background-color: white;
+        .btn-danger:hover{
+          background-color:white;
           font-weight: bold;
-          border-color: #BB86FC;
-          color: #BB86FC;
-        } */
+          border-color:#9850E4;
+          color:#9850E4;
+        }
     </style>
   </head>
   <body>
     <div class="sidebar">
       <h4>Admin Panel</h4>
       <a href="/admin"><i class="fas fa-home"></i> Dashboard</a>
+      <a href="/collegeDetails"><i class="fas fa-building"></i> College Details</a>
       <a href="/discipline"><i class="fas fa-book"></i> Discipline</a>
       <a href="/branches"><i class="fas fa-code-branch"></i> Branches</a>
       <a href="/subjects"><i class="fas fa-book-open"></i> Subjects</a>
@@ -142,40 +147,43 @@
     <div class="main">
       <h1>Welcome</h1>
       <div class="dashboard">
+        <a href="/collegeDetails" class="card">
+          <img src="assets/images/college.png" alt="College Details">
+          <p>College Details</p>
+        </a>
         <a href="/discipline" class="card">
-          <img src="/assets/images/admin.png" alt="Dashboard">
+          <img src="assets/images/admin.png" alt="Dashboard">
           <p>Add Discipline</p>
         </a>
         <a href="/branches" class="card">
-          <img src="/assets/images/branch.png" alt="Branches">
+          <img src="assets/images/branch.png" alt="Branches">
           <p>Branches</p>
         </a>
         <a href="/subjects" class="card">
-          <img src="/assets/images/subjects.png" alt="Subjects">
+          <img src="assets/images/subjects.png" alt="Subjects">
           <p>Subjects</p>
         </a>
         <a href="/faculty" class="card">
-          <img src="/assets/images/faculty.png" alt="Faculty">
+          <img src="assets/images/faculty.jpg" alt="Faculty">
           <p>Faculty</p>
         </a>
         <a href="/mapping" class="card">
-          <img src="/assets/images/mapping.png" alt="Map">
+          <img src="assets/images/mapping.png" alt="Map">
           <p>Map</p>
         </a>
         <a href="/server" class="card">
-          <img src="/assets/images/server.png" alt="Server">
+          <img src="assets/images/server.png" alt="Server">
           <p>Server</p>
         </a>
         <a href="/report" class="card">
-          <img src="/assets/images/report.png" alt="Map">
+          <img src="assets/images/report.png" alt="Map">
           <p>Report</p>
         </a>
         <a href="/teacher-remarks" class="card">
-          <img src="/assets/images/remarks.png" alt="Map">
+          <img src="assets/images/remarks.png" alt="Map">
           <p>Teacher Remarks</p>
         </a>
       </div>
     </div>
   </body>
-  <%- include('partials/footer') %>
 </html>
