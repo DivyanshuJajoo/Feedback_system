@@ -9,201 +9,20 @@
     <link href="/assets/css/styles2.css" rel="stylesheet">
     <title>Feedback Report</title>
 
-    <style>
-        /* body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            color: #333;
-            background-color: #f8f9fa;
-        } */
-
-        /* .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 240px;
-            height: 100%;
-            background-color: rgba(255, 255, 255, 0.1);
-            color: #fff;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .sidebar h4 {
-            text-align: center;
-            font-size: 22px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            color: #9850E4;
-            text-transform: uppercase;
-        }
-
-        .sidebar a {
-            display: block;
-            padding: 12px;
-            color: #ffffff;
-            text-decoration: none;
-            margin-bottom: 10px;
-            border-radius: 4px;
-            transition: background 0.3s;
-        }
-
-        .sidebar a:hover {
-            background-color: #9850E4;
-            color: #1a1a2e;
-        } */
-
-        /* .main {
-            margin-left: 260px;
-            padding: 20px;
-        }
-        .main h1,h2 {
-            font-size: 28px;
-            font-weight: bold;
-            color: #1a1a2e;
-            margin-bottom: 20px;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-            
-        }
-        .card {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            overflow: hidden;
-        } */
-/* 
-        .filter-form {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-            background-color: #fff;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-
-        .filter-form label {
-            margin-right: 10px;
-            font-weight: bold;
-        }
-
-        .filter-form select, .filter-form button {
-            margin-right: 10px;
-            padding: 10px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-        }
-
-        .filter-form button {
-            background-color: #9850E4;
-            color: #fff;
-            font-size: 16px;
-            cursor: pointer;
-            border: none;
-        } */
-
-        /* .table-container {
-            max-height: 400px; 
-            overflow-y: auto;
-            margin-top: 20px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background-color: #fff;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        th, td {
-            padding: 12px 15px;
-            text-align: center;
-            border-bottom: 1px solid #ddd;
-            font-size: 14px;
-            color: #333;
-        }
-
-        th {
-            background-color: #9850E4;
-            color: #fff;
-            text-transform: uppercase;
-            font-weight: bold;
-        }
-
-        tr:nth-child(even) {
-            background-color: #f2f2f2;
-        }
-
-        tr:hover {
-            background-color: #e9ecef;
-            transition: background-color 0.3s ease;
-        } */
-/* 
-        .no-feedback {
-            text-align: center;
-            padding: 20px;
-            background-color: #e9ecef;
-            border-radius: 8px;
-            font-size: 16px;
-            color: #666;
-        }
-
-        .question-section {
-            background-color: #fff;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .question-section h2 {
-            font-size: 20px;
-            font-weight: bold;
-            color: #9850E4;
-            margin-bottom: 15px;
-            cursor: pointer;
-        }
-
-        .question-list {
-            list-style-type: decimal;
-            padding-left: 20px;
-            margin: 0;
-            display: none;
-        }
-
-        .question-list li {
-            margin-bottom: 10px;
-            font-size: 16px;
-            color: #333;
-        } */
-        /* .btn-danger{
-          border-radius: 8px;
-        }
-        .btn-danger:hover{
-          background-color:white;
-          font-weight: bold;
-          border-color:#9850E4;
-          color:#9850E4;
-        } */
-    </style>
 </head>
 <body>
     <div class="sidebar">
         <h4>Admin Panel</h4>
         <a href="/admin"><i class="fas fa-home"></i> Dashboard</a>
-        <!-- <a href="/collegeDetails"><i class="fas fa-building"></i> College Details</a> -->
         <a href="/discipline"><i class="fas fa-book"></i> Discipline</a>
         <a href="/branches"><i class="fas fa-code-branch"></i> Branches</a>
         <a href="/subjects"><i class="fas fa-book-open"></i> Subjects</a>
         <a href="/faculty"><i class="fas fa-user-tie"></i> Faculty</a>
         <a href="/mapping"><i class="fas fa-map"></i> Mapping</a>
-        <a href="/server"><i class="fas fa-server"></i> Server</a>
-        <a href="/report"><i class="fas fa-chart-line"></i> Report</a>
+        <a href="/server"><i class="fas fa-server"></i>  Semester Control</a>
+        <a href="/report" class="active"><i class="fas fa-chart-line"></i> Report</a>
         <a href="/teacher-remarks"><i class="fas fa-comment"></i> Faculty Remarks</a>
+        <a href="/faculty-feedback"><i class="fas fa-download"></i> Feedback Download</a>
         <form action="/logout?_method=DELETE" method="POST" style="display:inline;">
             <button type="submit" class="btn btn-danger">Logout</button>
         </form>
@@ -239,9 +58,9 @@
                 </select>
                 <label1 for="feedbackYear">Select Year:</label1>
                 <select name="feedbackYear" id="feedbackYear">
-                    <option value="2023" <%= feedbackYear == '2023' ? 'selected' : '' %>>2023</option>
-                    <option value="2024" <%= feedbackYear == '2024' ? 'selected' : '' %>>2024</option>
-                    <option value="2025" <%= feedbackYear == '2025' ? 'selected' : '' %>>2025</option>
+                    <option value="2023" <%= feedbackYear == '2023' ? 'selected' : '' %>>2022-2023</option>
+                    <option value="2024" <%= feedbackYear == '2024' ? 'selected' : '' %>>2023-2024</option>
+                    <option value="2025" <%= feedbackYear == '2025' ? 'selected' : '' %>>2024-2025</option>
                 </select>
                 <button type="submit">Filter</button>
             </form>
@@ -281,6 +100,11 @@
             <% } else { %>
                 <div class="no-feedback">No feedbacks available.</div>
             <% } %>
+            <a href="/report/download?facultyName=<%= encodeURIComponent(facultyId ? faculties.find(f => f.id == facultyId)?.name || '' : '') %>&feedbackYear=<%= feedbackYear %>" class="btn btn-primary">
+                Download PDF
+            </a>
+            
+
         </div>
     </div>
 </body>

@@ -13,6 +13,12 @@ function showNextFaculty(index) {
     }
 }
 
+function showPreviousFaculty(index) {
+    document.getElementById('faculty' + index).style.display = 'none';
+    currentIndex = index - 1;
+    document.getElementById('faculty' + currentIndex).style.display = 'block';
+}
+
 function selectPoint(point, question, index) {
     var points = document.querySelectorAll('#point' + index + '-' + question + ' li');
     points.forEach(function(item) {
@@ -28,4 +34,13 @@ function checkFilledSections() {
     if (filledSections === facultiesCount) {
         document.getElementById('submitButton').style.display = 'inline';
     }
+
 }
+document.getElementById("feedbackForm").addEventListener("submit", function (event) {
+    var confirmation = confirm("Are you sure you want to submit your feedback? Once submitted, it cannot be changed.");
+    
+    if (!confirmation) {
+        event.preventDefault(); // Prevent form submission if user cancels
+    }
+});
+

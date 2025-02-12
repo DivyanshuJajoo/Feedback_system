@@ -13,130 +13,7 @@
 
     <title>Manage Subject</title>
 
-    <style>
-        /* body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            color: #333;
-            background-color: #eef2f7;
-        } */
-
-        /* .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 240px;
-            height: 100%;
-            background-color: rgba(255, 255, 255, 0.1);
-            color: #fff;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .sidebar h4 {
-            text-align: center;
-            font-size: 22px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            color: #9850E4;
-            text-transform: uppercase;
-        }
-
-        .sidebar a {
-            display: block;
-            padding: 12px;
-            color: #ffffff;
-            text-decoration: none;
-            margin-bottom: 10px;
-            border-radius: 4px;
-            transition: background 0.3s;
-        }
-
-        .sidebar a:hover {
-            background-color: #9850E4;
-            color: #1a1a2e;
-        } */
-/* 
-        .main {
-            margin-left: 240px;
-            padding: 20px;
-        }
-        .main h1,h2 {
-            font-size: 28px;
-            font-weight: bold;
-            color: #1a1a2e;
-            margin-bottom: 20px;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-            
-        }
-
-        .form-control, .btn {
-            margin-bottom: 15px;
-        }
-
-        .btn-primary {
-            background-color: #9850E4;
-            border-color: #9850E4;
-            color: #fff;
-        }
-
-        .btn-primary:hover {
-            background-color: #9850E4;
-            border-color: #9850E4;
-        }
-
-        .btn-secondary {
-            background-color: #34495e;
-            border-color: #34495e;
-        }
-
-        .btn-danger {
-            background-color: #e74c3c;
-            border-color: #e74c3c;
-        }
-
-        .card {
-            margin-top: 20px;
-            padding: 20px;
-            background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        th, td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-
-        th {
-            background-color: #f8f9fa;
-        }
-
-        tr:nth-child(even) {
-            background-color: #ecf0f1;
-        }
-
-        tr:hover {
-            background-color: #d5dbdb;
-        }
-        .btn-danger{
-          border-radius: 8px;
-        }
-        .btn-danger:hover{
-          background-color:white;
-          font-weight: bold;
-          border-color:#9850E4;
-          color:#9850E4;
-        } */
-    </style>
+    
 </head>
 <body>
 <div class="sidebar">
@@ -145,12 +22,13 @@
     <!-- <a href="/collegeDetails"><i class="fas fa-building"></i> College Details</a> -->
     <a href="/discipline"><i class="fas fa-book"></i> Discipline</a>
     <a href="/branches"><i class="fas fa-code-branch"></i> Branches</a>
-    <a href="/subjects"><i class="fas fa-book-open"></i> Subjects</a>
+    <a href="/subjects" class="active"><i class="fas fa-book-open"></i> Subjects</a>
     <a href="/faculty"><i class="fas fa-user-tie"></i> Faculty</a>
     <a href="/mapping"><i class="fas fa-map"></i> Mapping</a>
-    <a href="/server"><i class="fas fa-server"></i> Server</a>
+    <a href="/server"><i class="fas fa-server"></i>  Semester Control</a>
     <a href="/report"><i class="fas fa-chart-line"></i> Report</a>
     <a href="/teacher-remarks"><i class="fas fa-comment"></i> Faculty Remarks</a>
+    <a href="/faculty-feedback"><i class="fas fa-download"></i> Feedback Download</a>
     <form action="/logout?_method=DELETE" method="POST" style="display:inline;">
         <button type="submit" class="btn btn-danger">Logout</button>
     </form>
@@ -192,8 +70,16 @@
     <div class="card">
         <h2>Upload Subjects via Excel</h2>
         <p><strong>File Format:</strong> The file should be formatted with the following columns: 
-            <code>name , discipline_name , branch_name            </code>
-            </p>
+            <code>name , discipline_name , branch_name</code>
+        </p>
+
+        <div class="form-group d-flex align-items-center">
+            <label class="mr-2">Sample Excel file:</label>
+            <a href="/downloads/sample_subjects.xlsx" download class="btn btn-secondary">
+               Download
+            </a>
+        </div>
+     
         <form action="/subjects/upload" method="POST" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="subjectFile">Upload Subject Excel File:</label>
@@ -202,6 +88,7 @@
             <button type="submit" class="btn btn-primary">Upload</button>
         </form>
     </div>
+    
 
     <div class="card">
         <h2>Subjects List</h2>

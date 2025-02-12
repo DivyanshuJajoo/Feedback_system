@@ -177,6 +177,51 @@
               display: inline-block;
               margin-bottom: .1rem;
           }
+
+          .rotatingText {
+  font-family: "Georgia", serif;
+  font-style: italic;
+  font-size: 18px;
+  text-align: center;
+  position: relative;
+}
+
+.rotatingText-adjective {
+    font-family: "Open Sans", sans-serif;
+    font-size: 22px;
+    font-style: normal;
+    font-weight: 700;
+    left: 0;
+    opacity: 0;
+    position: fixed;
+    text-align: left;
+    right: 0;
+    text-transform: uppercase;
+    top: 0;
+    padding-left: 100px;
+    padding-top:1rem;
+    animation: rotate 9s infinite;
+}
+
+.rotatingText-adjective:nth-of-type(1) {
+  animation-delay: 0s;
+}
+
+.rotatingText-adjective:nth-of-type(2) {
+  animation-delay: 3s;
+}
+
+.rotatingText-adjective:nth-of-type(3) {
+  animation-delay: 6s;
+}
+
+
+@keyframes rotate {
+  0% { opacity: 0; transform: translateY(15px); }
+  10%, 30% { opacity: 1; transform: translateY(0); }
+  40%, 100% { opacity: 0; transform: translateY(-15px); }
+}
+  
     </style>
   </head>
   <body  style="margin: 0; padding: 0; background: url('assets/images/manit_bg.jpeg') no-repeat center center fixed; background-size: cover;">
@@ -187,25 +232,28 @@
                   <img height="50px" alt="MANIT" class="img img-responsive" src="/assets/images/MANIT logo.png">
           </a>
       <div class="collapse navbar-collapse" id="navbarNavAltMarkupTopHeader">
-          <div class="navbar-nav">
-              <ul style="padding: 0px; margin: 0px;">
-                  <li class="d-none d-md-block d-lg-block text-warning">
-                    <label>Maulana Azad National Institute of Technology</label>
-                  </li>
-                  <li class="d-none d-md-block d-lg-block text-white">
-                      
-                    <label>Bhopal, Madhya Pradesh 462003</label>
-                      
-                  </li>
-              </ul>
-          </div>
-      </div>
-      <% const alertMessage = message || 'Welcome! Please log in.'; %>
+    <div class="navbar-nav">
+        <ul style="padding: 0px; margin: 0px;">
+            <li class="d-none d-md-block d-lg-block text-warning">
+                <!-- Rotating Text Slider -->
+                <p class="rotatingText">
+                    <span class="rotatingText-adjective">Maulana Azad National Institute of Technology</span>
+                    <span class="rotatingText-adjective">Faculty Feedback System</span>
+                    
+                    <span class="rotatingText-adjective">MANIT Bhopal</span> 
+                    
+                </p>
+            </li>
+        </ul>
+    </div>
+</div>
+
+      <!-- <% const alertMessage = message || 'Welcome! Please log in.'; %> -->
     
   </nav>
-  <div class="alert alert-success" role="alert">
+  <!-- <div class="alert alert-success" role="alert">
     <%= alertMessage %>
-  </div>
+  </div> -->
     <!-- <form action="/api/user/login" method="post">
         <section class="form-02-main">
             <div class="container">
