@@ -30,6 +30,8 @@
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
     "passport-session": "^1.0.2",
+    "pdfkit": "^0.16.0",
+    "pdfmake": "^0.2.18",
     "pg": "^8.11.3",
     "swagger-ui-express": "^5.0.0",
     "winston": "^3.11.0",

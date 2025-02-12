@@ -27,6 +27,8 @@ import multer from "multer"
 import xlsx from "xlsx";
 const upload = multer({ dest: 'uploads/' });
 import fs from "fs";
+import PDFDocument from 'pdfkit';
+import PdfPrinter from "pdfmake";
 import fileUpload from "express-fileupload";
 import path from "path";
 import { fileURLToPath } from 'url';
@@ -36,6 +38,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 app.use(fileUpload());
 app.use(methodOverride('_method'));
+app.use('/downloads', express.static(path.join(__dirname, 'public')))
 
 /////passport
 
@@ -151,14 +154,15 @@ app.post(
 
 
 app.post('/submit-feedback', async (req, res) => {
-  const db=getDB();
- const user=req.user;
- const uniqueid=user.uniqueid;
- const year=user.year;
- const section=user.section;
- const branch=user.branch_name;
- const discipline_id=user.discipline_id;
- let branch_id = null;
+  const db = getDB();
+  const user = req.user;
+  const uniqueid = user.uniqueid;
+  const year = user.year;
+  const section = user.section;
+  const branch = user.branch_name;
+  const discipline_id = user.discipline_id;
+  const semester = user.semester; // Added semester
+  let branch_id = null;
 
   if (branch) {
     const branchResult = await db.query(
@@ -167,143 +171,144 @@ app.post('/submit-feedback', async (req, res) => {
     );
     branch_id = branchResult.rows.length ? branchResult.rows[0].branch_id : null;
   }
- const faculties = JSON.parse(req.body.faculties);
- const obj = JSON.parse(JSON.stringify(req.body)); 
- req.body=obj;
- console.log(req.body);
 
- const updateUserQuery = {
-  text: `
+  const faculties = JSON.parse(req.body.faculties);
+  const obj = JSON.parse(JSON.stringify(req.body)); 
+  req.body = obj;
+  console.log(req.body);
+
+  const updateUserQuery = {
+    text: `
       UPDATE users
       SET has_filled = TRUE
       WHERE uniqueid = $1
-  `,
-  values: [uniqueid]
-};
-await db.query(updateUserQuery);
-
- try{
- for (let i = 0; i <faculties.length; i++) {
-  // console.log('inside');
-  // const facultyId = req.faculties[i].Assigned_faculty.id;
-  if (parseInt(req.body[`selectedPoint${i}-1`]) === 11) {
-    console.log("doneeee");
-    // Skip this faculty feedback
-    console.log(`Feedback skipped for faculty: ${faculties[i].Assigned_faculty.id}`);
-    continue; // Skip to the next faculty
-}
-  const facultyFeedback = {};
-  for (let j = 1; j <= 10; j++) {
-    facultyFeedback[j] = req.body[`selectedPoint${i}-${j}`];
-}
-  const feedbackData = {
-    fac_id: faculties[i].Assigned_faculty.id,
-    subject:faculties[i].subject,
-    year: year,
-    branch: branch,
-    section: section,
-    Q1: facultyFeedback[1], // Assuming ratingResponses is an array of objects containing ratings for each question
-    Q2: facultyFeedback[2],
-    Q3: facultyFeedback[3],
-    Q4: facultyFeedback[4],
-    Q5: facultyFeedback[5],
-    Q6: facultyFeedback[6],
-    Q7: facultyFeedback[7],
-    Q8: facultyFeedback[8],
-    Q9: facultyFeedback[9],
-    Q10: facultyFeedback[10],
-    responses:1,
-    branch_id,
-    discipline_id
-  };
-  const currentYear = new Date().getFullYear();
-  console.log(currentYear);
-
-  const existingFeedback = await db.query({
-    text: `
-        SELECT * FROM feedback
-        WHERE fac_id = $1 AND subject = $2 AND year = $3 AND branch = $4 AND section = $5 AND Feedback_year = $6 AND branch_id = $7 
-              AND discipline_id = $8
     `,
-    values: [feedbackData.fac_id, feedbackData.subject, feedbackData.year, feedbackData.branch, feedbackData.section, currentYear, feedbackData.branch_id,feedbackData.discipline_id]
-});
-
-if (existingFeedback.rows.length > 0) {
-  // Update existing entry
-  const updateQuery = {
-      text: `
-          UPDATE feedback
-          SET q1 = q1 + $6, q2 = q2 + $7, q3 = q3 + $8, q4 = q4 + $9, q5 = q5 + $10,
-              q6 = q6 + $11, q7 = q7 + $12, q8 = q8 + $13, q9 = q9 + $14, q10 = q10 + $15,
-              responses = responses + 1
-          WHERE fac_id = $1 AND subject = $2 AND year = $3 AND branch = $4 AND section = $5 AND branch_id = $16
-                AND discipline_id = $17
-      `,
-      values: [
-          feedbackData.fac_id, feedbackData.subject, feedbackData.year, feedbackData.branch, feedbackData.section,
-          feedbackData.Q1, feedbackData.Q2, feedbackData.Q3, feedbackData.Q4, feedbackData.Q5,
-          feedbackData.Q6, feedbackData.Q7, feedbackData.Q8, feedbackData.Q9, feedbackData.Q10, feedbackData.branch_id,feedbackData.discipline_id
-      ]
+    values: [uniqueid]
   };
-  await db.query(updateQuery);
-} else {
+  await db.query(updateUserQuery);
 
-  const feedbackQuery = {
-    text: `
-      INSERT INTO feedback (fac_id, subject,year,branch,section,q1, q2, q3, q4, q5, q6, q7, q8, q9, q10,responses,feedback_year,branch_id, discipline_id)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14,$15,$16,$17,$18,$19)
-    `,
-    values: [
-      feedbackData.fac_id,
-      feedbackData.subject,
-      feedbackData.year,
-      feedbackData.branch,
-      feedbackData.section,
-      feedbackData.Q1,
-      feedbackData.Q2,
-      feedbackData.Q3,
-      feedbackData.Q4,
-      feedbackData.Q5,
-      feedbackData.Q6,
-      feedbackData.Q7,
-      feedbackData.Q8,
-      feedbackData.Q9,
-      feedbackData.Q10,
-      feedbackData.responses,
-      currentYear,
-      feedbackData.branch_id,
-      feedbackData.discipline_id
-    ]
-  };
-  await db.query(feedbackQuery);
-}
-const remark = req.body[`remark${i}`];
-const responseQuery = {
-  text: `
-    INSERT INTO responses (fac_id, subject, year, branch, section, feedback_year, response,branch_id,discipline_id)
-    VALUES ($1, $2, $3, $4, $5, $6, $7,$8,$9)
-  `,
-  values: [feedbackData.fac_id, feedbackData.subject, feedbackData.year, feedbackData.branch, feedbackData.section, currentYear, remark,feedbackData.branch_id,feedbackData.discipline_id]
-};
-await db.query(responseQuery);
-}
+  try {
+    for (let i = 0; i < faculties.length; i++) {
+      if (parseInt(req.body[`selectedPoint${i}-1`]) === 11) {
+        console.log(`Feedback skipped for faculty: ${faculties[i].Assigned_faculty.id}`);
+        continue; // Skip this faculty's feedback
+      }
 
-req.logout((err) => {
-  if (err) return res.status(500).send('Error logging out');
-  res.clearCookie('connect.sid'); // Clear session cookie
+      const facultyFeedback = {};
+      for (let j = 1; j <= 10; j++) {
+        facultyFeedback[j] = req.body[`selectedPoint${i}-${j}`];
+      }
 
-  // Redirect to the login page with a success message
-  res.render('login', {
-    message: 'Feedback submitted successfully.' // Render login page with a message
-  });
+      const feedbackData = {
+        fac_id: faculties[i].Assigned_faculty.id,
+        subject: faculties[i].subject,
+        year: year,
+        branch: branch,
+        section: section,
+        semester: semester,  // Added semester
+        Q1: facultyFeedback[1],
+        Q2: facultyFeedback[2],
+        Q3: facultyFeedback[3],
+        Q4: facultyFeedback[4],
+        Q5: facultyFeedback[5],
+        Q6: facultyFeedback[6],
+        Q7: facultyFeedback[7],
+        Q8: facultyFeedback[8],
+        Q9: facultyFeedback[9],
+        Q10: facultyFeedback[10],
+        responses: 1,
+        branch_id,
+        discipline_id
+      };
+
+      const currentYear = new Date().getFullYear();
+      console.log(currentYear);
+
+      const existingFeedback = await db.query({
+        text: `
+          SELECT * FROM feedback
+          WHERE fac_id = $1 AND subject = $2 AND year = $3 AND branch = $4 AND section = $5 
+                AND Feedback_year = $6 AND branch_id = $7 AND discipline_id = $8 AND semester = $9
+        `,
+        values: [
+          feedbackData.fac_id, feedbackData.subject, feedbackData.year, feedbackData.branch,
+          feedbackData.section, currentYear, feedbackData.branch_id, feedbackData.discipline_id,
+          feedbackData.semester // Added semester condition
+        ]
+      });
+
+      if (existingFeedback.rows.length > 0) {
+        // Update existing feedback entry
+        const updateQuery = {
+          text: `
+            UPDATE feedback
+            SET q1 = q1 + $6, q2 = q2 + $7, q3 = q3 + $8, q4 = q4 + $9, q5 = q5 + $10,
+                q6 = q6 + $11, q7 = q7 + $12, q8 = q8 + $13, q9 = q9 + $14, q10 = q10 + $15,
+                responses = responses + 1
+            WHERE fac_id = $1 AND subject = $2 AND year = $3 AND branch = $4 AND section = $5 
+                  AND branch_id = $16 AND discipline_id = $17 AND semester = $18
+          `,
+          values: [
+            feedbackData.fac_id, feedbackData.subject, feedbackData.year, feedbackData.branch,
+            feedbackData.section, feedbackData.Q1, feedbackData.Q2, feedbackData.Q3, feedbackData.Q4,
+            feedbackData.Q5, feedbackData.Q6, feedbackData.Q7, feedbackData.Q8, feedbackData.Q9,
+            feedbackData.Q10, feedbackData.branch_id, feedbackData.discipline_id, feedbackData.semester
+          ]
+        };
+        await db.query(updateQuery);
+      } else {
+        // Insert new feedback entry
+        const feedbackQuery = {
+          text: `
+            INSERT INTO feedback (fac_id, subject, year, branch, section, semester, q1, q2, q3, q4, q5, 
+                                  q6, q7, q8, q9, q10, responses, feedback_year, branch_id, discipline_id)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+          `,
+          values: [
+            feedbackData.fac_id, feedbackData.subject, feedbackData.year, feedbackData.branch,
+            feedbackData.section, feedbackData.semester, feedbackData.Q1, feedbackData.Q2,
+            feedbackData.Q3, feedbackData.Q4, feedbackData.Q5, feedbackData.Q6, feedbackData.Q7,
+            feedbackData.Q8, feedbackData.Q9, feedbackData.Q10, feedbackData.responses,
+            currentYear, feedbackData.branch_id, feedbackData.discipline_id
+          ]
+        };
+        await db.query(feedbackQuery);
+      }
+
+      // Insert feedback remark in responses table
+      const remark = req.body[`remark${i}`];
+      const responseQuery = {
+        text: `
+          INSERT INTO responses (fac_id, subject, year, branch, section, semester, feedback_year, response, 
+                                 branch_id, discipline_id)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        `,
+        values: [
+          feedbackData.fac_id, feedbackData.subject, feedbackData.year, feedbackData.branch,
+          feedbackData.section, feedbackData.semester, currentYear, remark,
+          feedbackData.branch_id, feedbackData.discipline_id
+        ]
+      };
+      await db.query(responseQuery);
+    }
+
+    // Logout and redirect after feedback submission
+    req.logout((err) => {
+      if (err) return res.status(500).send('Error logging out');
+      res.clearCookie('connect.sid'); // Clear session cookie
+
+      // Redirect to login with success message
+      res.render('login', {
+        message: 'Feedback submitted successfully.'
+      });
+    });
+
+  } catch (error) {
+    console.error('Error while submitting feedback:', error);
+    res.status(500).send('Internal Server Error');
+  }
 });
-} 
- catch (error) {
-console.error('Error while submitting feedback:', error);
-res.status(500).send('Internal Server Error');
-} 
- 
-});
+
 
 
 
@@ -1289,29 +1294,25 @@ app.post('/server/toggle', async (req, res) => {
 
 
 //report
-
-app.get('/report',checkAuthenticated, async (req, res) => {
+app.get('/report', checkAuthenticated, async (req, res) => {
   const db = getDB();
   const currentYear = new Date().getFullYear();
-  // console.log(req.session.adminDetails.discipline);
-const userDiscipline = req.session.adminDetails.discipline || null;
-// console.log(userDiscipline);
-const userBranch = req.session.adminDetails.branch_name || null;
-// console.log(userBranch);
+  const userDiscipline = req.session.adminDetails?.discipline || null;
+  const userBranch = req.session.adminDetails?.branch_name || null;
+  
   let branchId = null;
-    if (userBranch) {
-      const branchResult = await db.query(
-        'SELECT branch_id FROM branchnew WHERE branch_name = $1',
-        [userBranch]
-      );
-      branchId = branchResult.rows.length ? branchResult.rows[0].branch_id : null;
-    }
-    console.log(branchId);
+  if (userBranch) {
+    const branchResult = await db.query(
+      'SELECT branch_id FROM branchnew WHERE branch_name = $1',
+      [userBranch]
+    );
+    branchId = branchResult.rows.length ? branchResult.rows[0].branch_id : null;
+  }
 
-  console.log(currentYear);
   try {
     const facultyId = req.query.facultyId || '';
-    const feedbackYear = req.query.feedbackYear || currentYear; // Capture feedback year from query
+    const feedbackYear = req.query.feedbackYear || currentYear;
+    const semesterType = req.query.semesterType || ''; // Capture semester type from query
 
     // Fetch all faculties for the dropdown
     let facultiesQuery = 'SELECT id, name FROM faculty';
@@ -1323,13 +1324,15 @@ const userBranch = req.session.adminDetails.branch_name || null;
     const facultiesResult = await db.query(facultiesQuery, queryParams1);
     const faculties = facultiesResult.rows;
 
-    // Construct the query to fetch feedback data including faculty name
+    // Construct the feedback query
     let feedbackQuery = `
       SELECT 
           f.year, 
           f.section, 
           f.branch, 
           f.subject,
+          f.semester,
+          f.feedback_year,
           fac.name AS faculty_name, 
           SUM(f.q1) AS q1, 
           SUM(f.q2) AS q2, 
@@ -1346,46 +1349,51 @@ const userBranch = req.session.adminDetails.branch_name || null;
       JOIN faculty fac ON f.fac_id = fac.id
     `;
 
-    let feedbackResult;
     const queryParams = [];
-    // console.log(userDiscipline);
-    if (userDiscipline) {
-      console.log(userDiscipline);
-      queryParams.push(userDiscipline);
-      
-      feedbackQuery += ` WHERE f.discipline_id = $${queryParams.length}`;
+    let whereClauses = [];
 
+    if (userDiscipline) {
+      queryParams.push(userDiscipline);
+      whereClauses.push(`f.discipline_id = $${queryParams.length}`);
     }
 
     if (branchId) {
       queryParams.push(branchId);
-      console.log(branchId);
-      feedbackQuery += queryParams.length > 1 ? ` AND` : ` WHERE`;
-      feedbackQuery += ` f.branch_id = $${queryParams.length}`;
+      whereClauses.push(`f.branch_id = $${queryParams.length}`);
     }
-    
-    // Filter by faculty and feedback year if provided
+
     if (facultyId) {
       queryParams.push(facultyId);
-      feedbackQuery += queryParams.length > 1 ? ` AND` : ` WHERE`;
-      feedbackQuery += ` f.fac_id = $${queryParams.length}`;
+      whereClauses.push(`f.fac_id = $${queryParams.length}`);
     }
 
     if (feedbackYear) {
       queryParams.push(feedbackYear);
-      feedbackQuery += queryParams.length > 1 ? ` AND` : ` WHERE`;
-      feedbackQuery += ` f.feedback_year = $${queryParams.length}`;
+      whereClauses.push(`f.feedback_year = $${queryParams.length}`);
     }
 
-    feedbackQuery += ` GROUP BY f.year, f.section, f.branch,f.subject, fac.name ORDER BY f.year, f.section`;
-    console.log(feedbackQuery);
+    // Filter based on semester type
+    if (semesterType === 'Odd') {
+      whereClauses.push(`(f.semester % 2) = 1`); // Odd semesters (1, 3, 5, 7)
+    } else if (semesterType === 'Even') {
+      whereClauses.push(`(f.semester % 2) = 0`); // Even semesters (2, 4, 6, 8)
+    }
 
-    feedbackResult = await db.query(feedbackQuery, queryParams);
-    
+    // Combine where clauses
+    if (whereClauses.length > 0) {
+      feedbackQuery += ' WHERE ' + whereClauses.join(' AND ');
+    }
+
+    feedbackQuery += ` GROUP BY f.year, f.section, f.branch, f.subject, f.semester, f.feedback_year, fac.name 
+                       ORDER BY f.year, f.section`;
+
+    console.log(feedbackQuery); // Debugging
+
+    const feedbackResult = await db.query(feedbackQuery, queryParams);
     const feedbacks = feedbackResult.rows;
 
-    // Render the report page with the data
-    res.render('report', { faculties, facultyId, feedbackYear, feedbacks });
+    // Render the report page
+    res.render('report', { faculties, facultyId, feedbackYear, semesterType, feedbacks });
   } catch (err) {
     console.error('Error fetching report data:', err);
     res.status(500).send('Internal Server Error');
@@ -1393,14 +1401,210 @@ const userBranch = req.session.adminDetails.branch_name || null;
 });
 
 
-
-//teacher remarks
-app.get('/teacher-remarks',checkAuthenticated, async (req, res) => {
+app.get('/report/download', checkAuthenticated, async (req, res) => {
   const db = getDB();
   const currentYear = new Date().getFullYear();
-  const userDiscipline = req.session.adminDetails.discipline || null;
-// console.log(userDiscipline);
-const userBranch = req.session.adminDetails.branch_name || null;
+  const userDiscipline = req.session?.adminDetails?.discipline || null;
+  const userBranch = req.session?.adminDetails?.branch_name || null;
+  let branchId = null;
+  if (userBranch) {
+      const branchResult = await db.query(
+          'SELECT branch_id FROM branchnew WHERE branch_name = $1',
+          [userBranch]
+      );
+      branchId = branchResult.rows.length ? branchResult.rows[0].branch_id : null;
+  }
+  try {
+      const feedbackYear = req.query.feedbackYear || currentYear;
+      const facultyName = req.query.facultyName || '';
+      let feedbackQuery = `
+          SELECT 
+              f.year, 
+              f.section, 
+              f.branch, 
+              f.subject,
+              ROUND((SUM(f.q1) + SUM(f.q2) + SUM(f.q3) + SUM(f.q4) + SUM(f.q5) +
+                     SUM(f.q6) + SUM(f.q7) + SUM(f.q8) + SUM(f.q9) + SUM(f.q10)) / (SUM(f.responses) * 10), 2) 
+                     AS average_score
+          FROM feedback f
+          JOIN faculty fac ON f.fac_id = fac.id
+          WHERE f.feedback_year = $1
+      `;
+      const queryParams = [feedbackYear];
+      if (userDiscipline) {
+          feedbackQuery += ` AND f.discipline_id = $${queryParams.length + 1}`;
+          queryParams.push(userDiscipline);
+      }
+      if (branchId) {
+          feedbackQuery += ` AND f.branch_id = $${queryParams.length + 1}`;
+          queryParams.push(branchId);
+      }
+      if (facultyName) {
+          feedbackQuery += ` AND fac.name = $${queryParams.length + 1}`;
+          queryParams.push(facultyName);
+      }
+      feedbackQuery += ` GROUP BY f.year, f.section, f.branch, f.subject ORDER BY f.year, f.section`;
+      const feedbackResult = await db.query(feedbackQuery, queryParams);
+      const feedbacks = feedbackResult.rows;
+      if (!feedbacks.length) {
+          return res.status(404).send("No feedback data available.");
+      }
+      const fontsPath = path.join(__dirname, "public/assets/fonts");
+      if (!fs.existsSync(fontsPath)) {
+          return res.status(500).send("Fonts directory not found. Please add required fonts.");
+      }
+      const fonts = {
+          Roboto: {
+              normal: path.join(fontsPath, "roboto-regular-webfont.woff"),
+              bold: path.join(fontsPath, "roboto-bold-webfont.ttf"),
+              italics: path.join(fontsPath, "robotocondensed-regular-webfont.ttf"),
+              bolditalics: path.join(fontsPath, "roboto-bold-webfont.ttf"),
+          }
+      };
+      const printer = new PdfPrinter(fonts);
+      const tableHeaders = ["Year", "Section", "Branch", "Subject", "Average Score"];
+      const tableBody = [
+          tableHeaders.map(header => ({ text: header, bold: true }))
+      ];
+      feedbacks.forEach(row => {
+          tableBody.push([
+              row.year,
+              row.section,
+              row.branch,
+              row.subject,
+              (Number(row.average_score) || 0).toFixed(2),
+          ]);
+      });
+      const aggregatedFeedbacks = {};
+      feedbacks.forEach(row => {
+          const key = `${row.year}-${row.branch}-${row.subject}`;
+          if (!aggregatedFeedbacks[key]) {
+              aggregatedFeedbacks[key] = { 
+                  year: row.year,
+                  branch: row.branch,
+                  subject: row.subject,
+                  totalScore: 0, 
+                  count: 0 
+              };
+          }
+          aggregatedFeedbacks[key].totalScore += Number(row.average_score);
+          aggregatedFeedbacks[key].count += 1;
+      });
+      const aggregatedTableHeaders = ["Year", "Branch", "Subject", "Average Score"];
+      const aggregatedTableBody = [
+          aggregatedTableHeaders.map(header => ({ text: header, bold: true }))
+      ];
+      Object.values(aggregatedFeedbacks).forEach(row => {
+          aggregatedTableBody.push([
+              row.year,
+              row.branch,
+              row.subject,
+              (row.totalScore / row.count).toFixed(2),
+          ]);
+      });
+      const docDefinition = {
+          content: [
+              { text: "Faculty Feedback Report", style: "header" },
+              { text: `Feedback Year: ${feedbackYear}`, margin: [0, 10, 0, 10] },
+              facultyName ? { text: `Faculty: ${facultyName}`, margin: [0, 0, 0, 10] } : {},
+              {
+                  table: {
+                      headerRows: 1,
+                      widths: ["*", "*", "*", "*", "*"],
+                      body: tableBody,
+                  },
+                  layout: "lightHorizontalLines",
+                  margin: [0, 20, 0, 20]
+              },
+              { text: "Aggregated Feedback Report", style: "header", margin: [0, 20, 0, 10] },
+              {
+                  table: {
+                      headerRows: 1,
+                      widths: ["*", "*", "*", "*"],
+                      body: aggregatedTableBody,
+                  },
+                  layout: "lightHorizontalLines",
+              }
+          ],
+          styles: {
+              header: { fontSize: 18, bold: true, alignment: "center", margin: [0, 10, 0, 10] }
+          }
+      };
+      const filePath = path.join(__dirname, `faculty_feedback_report_${Date.now()}.pdf`);
+      const pdfDoc = printer.createPdfKitDocument(docDefinition);
+      const writeStream = fs.createWriteStream(filePath);
+      pdfDoc.pipe(writeStream);
+      pdfDoc.end();
+      writeStream.on("finish", () => {
+          res.download(filePath, "faculty_feedback_report.pdf", (err) => {
+              if (err) {
+                  console.error("Error sending file:", err);
+              }
+              fs.unlink(filePath, (err) => {
+                  if (err) console.error("Error deleting file:", err);
+              });
+          });
+      });
+  } catch (err) {
+      console.error("Error generating PDF:", err);
+      res.status(500).send("Error generating PDF");
+  }
+});
+
+app.get('/faculty-feedback', checkAuthenticated, async (req, res) => {
+  const db = getDB();
+  try {
+      // Fetch all disciplines
+      const disciplines = await db.query('SELECT * FROM discipline');
+      // Fetch all faculty members
+      const faculty = await db.query('SELECT * FROM faculty');
+      res.render('faculty-feedback', {
+          disciplines: disciplines.rows,
+          faculty: faculty.rows
+      });
+  } catch (err) {
+      console.error(err);
+      res.send("Error fetching faculty feedback data: " + err);
+  }
+});
+// Fetch faculty based on discipline selection
+app.get('/get-faculty', async (req, res) => {
+  const db = getDB();
+  const { discipline } = req.query;
+  try {
+      const faculty = await db.query('SELECT * FROM faculty WHERE discipline_id = $1', [discipline]);
+      res.json(faculty.rows);
+  } catch (err) {
+      console.error(err);
+      res.status(500).send("Error fetching faculty data");
+  }
+});
+// Fetch subjects dynamically based on selected faculty
+app.get('/get-subjects', async (req, res) => {
+  const db = getDB();
+  const { faculty } = req.query;
+  try {
+      const subjects = await db.query(`
+          SELECT s.subject_id, s.name AS subject_name 
+          FROM subjectnew s 
+          JOIN subject_faculty sf ON s.subject_id = sf.subject_id 
+          WHERE sf.faculty_id = $1
+      `, [faculty]);
+      res.json(subjects.rows);
+  } catch (err) {
+      console.error(err);
+      res.status(500).send("Error fetching subjects data");
+  }
+});
+
+
+//teacher remarks
+app.get('/teacher-remarks', checkAuthenticated, async (req, res) => {
+  const db = getDB();
+  const currentYear = new Date().getFullYear();
+  const userDiscipline = req.session.adminDetails?.discipline || null;
+  const userBranch = req.session.adminDetails?.branch_name || null;
+
   let branchId = null;
   if (userBranch) {
     const branchResult = await db.query(
@@ -1413,6 +1617,7 @@ const userBranch = req.session.adminDetails.branch_name || null;
   try {
     const facultyId = req.query.facultyId || '';
     const feedbackYear = req.query.feedbackYear || currentYear;
+    const semesterType = req.query.semesterType || ''; // Capture semester type from query
 
     // Fetch all faculties for the dropdown
     let facultiesQuery = 'SELECT id, name FROM faculty';
@@ -1430,6 +1635,8 @@ const userBranch = req.session.adminDetails.branch_name || null;
           f.year, 
           f.section, 
           f.branch, 
+          f.semester,
+          f.feedback_year,
           fac.name AS faculty_name, 
           f.response 
       FROM responses f
@@ -1437,49 +1644,55 @@ const userBranch = req.session.adminDetails.branch_name || null;
     `;
 
     const queryParams = [];
+    let whereClauses = [];
 
-    // Filter by faculty and year if provided
     if (userDiscipline) {
-      console.log(userDiscipline);
       queryParams.push(userDiscipline);
-      
-      feedbackQuery += ` WHERE f.discipline_id = $${queryParams.length}`;
-
+      whereClauses.push(`f.discipline_id = $${queryParams.length}`);
     }
 
     if (branchId) {
       queryParams.push(branchId);
-      console.log(branchId);
-      feedbackQuery += queryParams.length > 1 ? ` AND` : ` WHERE`;
-      feedbackQuery += ` f.branch_id = $${queryParams.length}`;
+      whereClauses.push(`f.branch_id = $${queryParams.length}`);
     }
-    
-    // Filter by faculty and feedback year if provided
+
     if (facultyId) {
       queryParams.push(facultyId);
-      feedbackQuery += queryParams.length > 1 ? ` AND` : ` WHERE`;
-      feedbackQuery += ` f.fac_id = $${queryParams.length}`;
+      whereClauses.push(`f.fac_id = $${queryParams.length}`);
     }
 
     if (feedbackYear) {
       queryParams.push(feedbackYear);
-      feedbackQuery += queryParams.length > 1 ? ` AND` : ` WHERE`;
-      feedbackQuery += ` f.feedback_year = $${queryParams.length}`;
+      whereClauses.push(`f.feedback_year = $${queryParams.length}`);
+    }
+
+    // Apply semester type filtering
+    if (semesterType === 'Odd') {
+      whereClauses.push(`(f.semester % 2) = 1`); // Odd semesters (1, 3, 5, 7)
+    } else if (semesterType === 'Even') {
+      whereClauses.push(`(f.semester % 2) = 0`); // Even semesters (2, 4, 6, 8)
+    }
+
+    // Combine all where clauses
+    if (whereClauses.length > 0) {
+      feedbackQuery += ' WHERE ' + whereClauses.join(' AND ');
     }
 
     feedbackQuery += ` ORDER BY f.year, f.section`;
 
+    console.log(feedbackQuery); // Debugging
+
     const feedbackResult = await db.query(feedbackQuery, queryParams);
     const feedbacks = feedbackResult.rows;
-    console.log(feedbacks);
 
-    // Render the new teacher-remarks page
-    res.render('teacher-remarks', { faculties, facultyId, feedbackYear, feedbacks });
+    // Render the teacher-remarks page
+    res.render('teacher-remarks', { faculties, facultyId, feedbackYear, semesterType, feedbacks });
   } catch (err) {
     console.error('Error fetching remarks data:', err);
     res.status(500).send('Internal Server Error');
   }
 });
+
 
 
 

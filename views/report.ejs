@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -74,7 +75,7 @@
             margin-bottom: 20px;
             overflow: hidden;
         } */
-/* 
+        /* 
         .filter-form {
             display: flex;
             align-items: center;
@@ -142,7 +143,7 @@
             background-color: #e9ecef;
             transition: background-color 0.3s ease;
         } */
-/* 
+        /* 
         .no-feedback {
             text-align: center;
             padding: 20px;
@@ -191,6 +192,7 @@
         } */
     </style>
 </head>
+
 <body>
     <div class="sidebar">
         <h4>Admin Panel</h4>
@@ -228,25 +230,36 @@
                 </ul>
             </div>
             <form class="filter-form" action="/report" method="get">
-                <label1 for="facultyId">Select Faculty:</label1>
+                <label for="facultyId"style="color: black;">Select Faculty:</label>
                 <select name="facultyId" id="facultyId">
-                    <option value="" <%= !facultyId ? 'selected' : '' %>>All Faculties</option>
-                    <% faculties.forEach(faculty => { %>
-                        <option value="<%= faculty.id %>" <%= facultyId == faculty.id ? 'selected' : '' %>>
+                    <option value="" <%=!facultyId ? 'selected' : '' %>>All Faculties</option>
+                    <% faculties.forEach(faculty=> { %>
+                        <option value="<%= faculty.id %>" <%=facultyId==faculty.id ? 'selected' : '' %>>
                             <%= faculty.name %>
                         </option>
-                    <% }) %>
+                        <% }) %>
                 </select>
-                <label1 for="feedbackYear">Select Year:</label1>
+
+                <label for="feedbackYear" style="color: black;">Select Year:</label>
                 <select name="feedbackYear" id="feedbackYear">
-                    <option value="2023" <%= feedbackYear == '2023' ? 'selected' : '' %>>2023</option>
-                    <option value="2024" <%= feedbackYear == '2024' ? 'selected' : '' %>>2024</option>
-                    <option value="2025" <%= feedbackYear == '2025' ? 'selected' : '' %>>2025</option>
+                    <option value="2023" <%=feedbackYear=='2023' ? 'selected' : '' %>>2023</option>
+                    <option value="2024" <%=feedbackYear=='2024' ? 'selected' : '' %>>2024</option>
+                    <option value="2025" <%=feedbackYear=='2025' ? 'selected' : '' %>>2025</option>
                 </select>
+
+                <label for="semesterType" style="color: black;">Select Semester Type:</label>
+
+                <select name="semesterType" id="semesterType">
+                    <option value="" <%=!semesterType ? 'selected' : '' %>>All</option>
+                    <option value="Odd" <%=semesterType=='Odd' ? 'selected' : '' %>>Odd</option>
+                    <option value="Even" <%=semesterType=='Even' ? 'selected' : '' %>>Even</option>
+                </select>
+
                 <button type="submit">Filter</button>
             </form>
 
-            <% if (feedbacks.length > 0) { %>
+
+            <% if (feedbacks.length> 0) { %>
                 <div class="table-container">
                     <table>
                         <thead>
@@ -254,61 +267,100 @@
                                 <th>Year</th>
                                 <th>Section</th>
                                 <th>Branch</th>
+                                <th>Semester</th>
                                 <th>Subject</th>
                                 <th>Faculty Name</th>
-                                <% for (let i = 1; i <= 10; i++) { %>
-                                    <th>Score Q<%= i %></th>
-                                <% } %>
+                                <th>Feedback Year</th>
+
+                                <% for (let i=1; i <=10; i++) { %>
+                                    <th>Score Q<%= i %>
+                                    </th>
+                                    <% } %>
+                                        <th>Average Score</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <% feedbacks.forEach(feedback => { %>
+                            <% feedbacks.forEach(feedback=> { %>
                                 <tr>
-                                    <td><%= feedback.year %></td>
-                                    <td><%= feedback.section %></td>
-                                    <td><%= feedback.branch %></td>
-                                    <td><%= feedback.subject %></td>
-                                    <td><%= feedback.faculty_name %></td>
-                                    <% for (let i = 1; i <= 10; i++) { %>
-                                        <td><%= feedback['q' + i] && feedback.responses ? (feedback['q' + i] / feedback.responses).toFixed(2) : 'N/A' %></td>
-                                    <% } %>
+                                    <td>
+                                        <%= feedback.year %>
+                                    </td>
+                                    <td>
+                                        <%= feedback.section %>
+                                    </td>
+                                    <td>
+                                        <%= feedback.branch %>
+                                    </td>
+                                    <td>
+                                        <%= feedback.semester %>
+                                    </td>
+                                    <td>
+                                        <%= feedback.subject %>
+                                    </td>
+                                    <td>
+                                        <%= feedback.branch %>
+                                    </td>
+                                    <td>
+                                        <%= feedback.feedback_year %>
+                                    </td>
+                                    <% let totalScore=0; %>
+                                        <% let validResponses=feedback.responses ? feedback.responses : 1; %>
+
+                                            <% for (let i=1; i <=10; i++) { %>
+                                                <% let score=feedback['q' + i] ? feedback['q' + i] / validResponses : 0;
+                                                    %>
+                                                    <% totalScore +=score; %>
+                                                        <td>
+                                                            <%= feedback['q' + i] && feedback.responses ?
+                                                                score.toFixed(2) : 'N/A' %>
+                                                        </td>
+                                                        <% } %>
+
+                                                            <!-- Extra column for the average score of all 10 questions -->
+                                                            <td style="background-color: #BB86FC; font-weight: bold;">
+                                                                <%= feedback.responses ? (totalScore / 10).toFixed(2) : 'N/A' %>
+                                                            </td>
                                 </tr>
-                            <% }); %>
+                                <% }); %>
                         </tbody>
                     </table>
                 </div>
                 <!-- <button id="download-pdf" class="btn btn-success">Download PDF</button> -->
-            <% } else { %>
-                <div class="no-feedback">No feedbacks available.</div>
-            <% } %>
+                <% } else { %>
+                    <div class="no-feedback">No feedbacks available.</div>
+                    <% } %>
+                    <a href="/report/download?facultyName=<%= encodeURIComponent(facultyId ? faculties.find(f => f.id == facultyId)?.name || '' : '') %>&feedbackYear=<%= feedbackYear %>" class="btn btn-primary">
+                        Download PDF
+                    </a>
         </div>
     </div>
 </body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-    
+
 <script>
     function toggleQuestions() {
         const questionList = document.getElementById("question-list");
         questionList.style.display = questionList.style.display === "none" ? "block" : "none";
     }
     document.getElementById('download-pdf')?.addEventListener('click', () => {
-            const { jsPDF } = window.jspdf;
+        const { jsPDF } = window.jspdf;
 
-            const doc = new jsPDF();
-            doc.setFontSize(18);
-            doc.text('Feedback Report', 14, 16);
+        const doc = new jsPDF();
+        doc.setFontSize(18);
+        doc.text('Feedback Report', 14, 16);
 
-            // Use autoTable plugin to format table
-            doc.autoTable({
-                html: '#feedback-table',
-                startY: 20,
-                theme: 'striped',
-                headStyles: { fillColor: [0, 123, 255] }
-            });
-
-            doc.save('Feedback_Report.pdf');
+        // Use autoTable plugin to format table
+        doc.autoTable({
+            html: '#feedback-table',
+            startY: 20,
+            theme: 'striped',
+            headStyles: { fillColor: [0, 123, 255] }
         });
+
+        doc.save('Feedback_Report.pdf');
+    });
 </script>
 <%- include('partials/footer') %>
+
 </html>
