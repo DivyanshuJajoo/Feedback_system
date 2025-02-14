@@ -10,6 +10,7 @@ import bcrypt from "bcrypt"
 import session from "express-session";
 import passport from "passport";
 import methodOverride from "method-override";
+import aiServices from "./aiServices.js";
 
 dotenv.config();
 import apiDocs from "./swagger_ver3.0.json" assert { type: "json" };
@@ -1502,7 +1503,34 @@ app.get('/report/download', checkAuthenticated, async (req, res) => {
               (row.totalScore / row.count).toFixed(2),
           ]);
       });
+      const headerImagePath = path.join(__dirname, "public/assets/images/header.png");
+      const footerImagePath = path.join(__dirname, "public/assets/images/footer.png");
       const docDefinition = {
+        pageSize: "A4",
+    pageMargins: [40, 100, 40, 80], // Adjust margins to fit header and footer
+
+    header: {
+      stack: [
+        {
+            image: path.join(__dirname, 'public/assets/images/header.png'),
+            width: 500,
+            alignment: 'center'
+        },
+        {
+            canvas: [ // Horizontal line
+                { type: 'line', x1: 0, y1: 5, x2: 595, y2: 5, lineWidth: 10 , color:'black'}
+            ]
+        }
+    ],
+    margin: [0, 10, 0, 10]
+    },
+    
+    footer: (currentPage, pageCount) => ({
+        columns: [
+            { image: footerImagePath, width: 500, alignment: "center" },
+        ],
+        margin: [40, 0, 40, 100]
+    }),
           content: [
               { text: "Faculty Feedback Report", style: "header" },
               { text: `Feedback Year: ${feedbackYear}`, margin: [0, 10, 0, 10] },
@@ -1692,7 +1720,37 @@ app.get('/teacher-remarks', checkAuthenticated, async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
+app.post('/summarize-feedback', checkAuthenticated, async (req, res) => {
+  const db = getDB();
+  const { facultyId, feedbackYear, semesterType } = req.body;
 
+  try {
+    // Fetch feedback responses for the selected faculty
+    const feedbackQuery = `
+      SELECT f.response 
+      FROM responses f
+      WHERE f.fac_id = ? AND f.feedback_year = ?
+      ${semesterType === 'Odd' ? 'AND (f.semester % 2) = 1' : ''}
+      ${semesterType === 'Even' ? 'AND (f.semester % 2) = 0' : ''}
+    `;
+    const [feedbackResult] = await db.execute(feedbackQuery, [facultyId, feedbackYear]);
+    const feedbackResponses = feedbackResult.map(row => row.response).join('\n');
+
+    // If no feedback is found, return an error
+    if (!feedbackResponses) {
+      return res.status(404).json({ error: 'No feedback found for the selected faculty.' });
+    }
+
+    // Use DeepSeek to summarize the feedback
+    const summarizedFeedback = await aiServices.summarizeFeedback(feedbackResponses);
+
+    // Return the summarized feedback and suggestions
+    res.json({ summary: summarizedFeedback });
+  } catch (err) {
+    console.error('Error summarizing feedback:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 
 
