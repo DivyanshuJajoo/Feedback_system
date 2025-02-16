@@ -78,6 +78,11 @@ body {
   grid-gap: 20px;
 }
 
+.sidebar a.active {
+  background-color: #BB86FC;
+  color: #1a1a2e;
+}
+
 
 .card {
   margin-top: 20px;
@@ -143,6 +148,7 @@ body {
   background-color: #ba79ff;
   border-color: #9850E4;
 }
+
 
 .btn-secondary {
   background-color: #F0F0F0;

@@ -12,9 +12,12 @@
             display: flex;
             justify-content: space-between;
             margin-bottom: 10px;
+            margin-top: 6px;
         }
 
         .bullet-points li {
+            color:black;
+            background-color: rgba(255, 255, 255, 0.573);
             font-weight: bold;
             cursor: pointer;
             padding: 10px;
@@ -25,16 +28,18 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            margin: 0 1px;
         }
 
+
         .bullet-points li.active {
-            background-color: #007bff;
+            background-color: #BB86FC;
             color: #fff;
-            border-color: #007bff;
+            border-color: #BB86FC;
         }
 
         .next-button, .submit-button {
-            background-color: #007bff;
+            background-color: #8520ff;
             color: white;
             padding: 10px 20px;
             border: none;
@@ -44,15 +49,51 @@
         }
 
         .next-button:hover, .submit-button:hover {
-            background-color: #0056b3;
+            background-color: #9948fc;
         }
+        h5 {
+        color: #BB86FC;
+      }
+      h4 {
+        color: #000;
+      }
+      h1{
+        color:white;
+      }
+      .logout-form {
+            margin-left: auto;
+        }
+
+        .logout-button {
+            background-color: red;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .logout-button:hover {
+            background-color: darkred;
+        }
+        textarea {
+    width: 100%;
+    max-width: 100%; /* Prevents overflow */
+    box-sizing: border-box; /* Ensures padding is included in width */
+    resize: vertical; /* Allows resizing only vertically */
+}
+
     </style>
 </head>
 <body>
     <div class="container">
         <h1 align="center">Feedback Page</h1>
+        <form action="/logout?_method=DELETE" method="POST" class="logout-form">
+            <button type="submit" class="logout-button">Logout</button>
+        </form>
         <form id="feedbackForm" action="/submit-feedback" method="post">
-            <h4>Note: 10 is the best, and 1 is the worst.</h4>
+            <h5>Note: <i>10</i> will be considered as <b><i>best</i></b> and <i>1</i> will be considered as <b><i>worst</i></b>.</h5>
 
             <input type="hidden" name="uniqueId" id="uniqueId" value="<%= uniqueId %>">
             <input type="hidden" name="faculties" id="faculties" value='<%= JSON.stringify(faculties) %>'>
@@ -64,6 +105,10 @@
 
                     <% for (let i = 1; i <= 10; i++) { %>
                         <h5><%= questionsArray[i-1] %></h5>
+                        <div style="display: flex; justify-content: space-between; font-style: italic; font-weight: bold; color: red;">
+                            <span>Worst</span> <span>Best</span>
+                          </div>
+                
                         <ul class="bullet-points">
                             <% for (let j = 1; j <= 10; j++) { %>
                                 <li onclick="selectPoint(<%= j %>, <%= i %>, <%= index %>)" id="point<%= index %>-<%= i %>-<%= j %>">
@@ -140,5 +185,6 @@
             }
         });
     </script>
+    
 </body>
 </html>

@@ -1725,15 +1725,21 @@ app.post('/summarize-feedback', checkAuthenticated, async (req, res) => {
   const { facultyId, feedbackYear, semesterType } = req.body;
 
   try {
-    // Fetch feedback responses for the selected faculty
-    const feedbackQuery = `
-      SELECT f.response 
-      FROM responses f
-      WHERE f.fac_id = ? AND f.feedback_year = ?
-      ${semesterType === 'Odd' ? 'AND (f.semester % 2) = 1' : ''}
-      ${semesterType === 'Even' ? 'AND (f.semester % 2) = 0' : ''}
+    // Construct the query based on semesterType
+    let feedbackQuery = `
+      SELECT response 
+      FROM responses 
+      WHERE fac_id = $1 AND feedback_year = $2
     `;
-    const [feedbackResult] = await db.execute(feedbackQuery, [facultyId, feedbackYear]);
+
+    if (semesterType === 'Odd') {
+      feedbackQuery += ' AND MOD(semester, 2) = 1';
+    } else if (semesterType === 'Even') {
+      feedbackQuery += ' AND MOD(semester, 2) = 0';
+    }
+
+    // Execute the query
+    const { rows: feedbackResult } = await db.query(feedbackQuery, [facultyId, feedbackYear]);
     const feedbackResponses = feedbackResult.map(row => row.response).join('\n');
 
     // If no feedback is found, return an error

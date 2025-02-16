@@ -1,11 +1,11 @@
 body{
-  background-image: url('assets/images/manit.jpg');
+  background-color: #1c1c25;
     background-size: cover;
     background-position: center;
     margin: 0;
     padding: 0;
     font-family: Arial, sans-serif; /* Example font family */
-    color: #333; /* Example text color */
+    color: white; /* Example text color */
 }
 
 
@@ -14,7 +14,7 @@ body{
   margin: 0 auto;
   padding: 20px;
   border-radius: 10px;
-  background-color: #f0f0f0;
+  background-color: rgba(255, 255, 255, 0.1);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   animation: fadeIn 0.5s ease;
   opacity: 0.9;
@@ -34,17 +34,17 @@ body{
 h1 {
   margin-top: 0;
   font-size: 32px;
-  color: #333;
+  color: white;
   text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.1);
 }
 
 h4 {
-  color: #666;
+  color: white;
 }
 
 label {
   font-weight: bold;
-  color: #555;
+  color: white;
   display: block;
   margin-bottom: 5px;
   transition: color 0.3s ease;

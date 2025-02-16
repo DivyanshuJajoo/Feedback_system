@@ -1,27 +1,3 @@
-<!-- views/login.ejs
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <link rel="stylesheet" href="/styles.css">
-</head>
-<body>
-    <div class="container">
-        <h1>Login</h1>
-        <form action="/api/user/login" method="post">
-            <label for="uniqueid">UniqueID:</label>
-            <input type="text" id="uniqueid" name="username" required>
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
-            <button type="submit">Login</button>
-        </form>
-        <p>Don't have an account? <a href="/signup">Sign up here</a>.</p>
-    </div>
-</body>
-</html> -->
-
 <!doctype html>
 <html lang="en">
   <head>
@@ -177,9 +153,54 @@
               display: inline-block;
               margin-bottom: .1rem;
           }
+
+          .rotatingText {
+  font-family: "Georgia", serif;
+  font-style: italic;
+  font-size: 18px;
+  text-align: center;
+  position: relative;
+}
+
+.rotatingText-adjective {
+    font-family: "Open Sans", sans-serif;
+    font-size: 22px;
+    font-style: normal;
+    font-weight: 700;
+    left: 0;
+    opacity: 0;
+    position: fixed;
+    text-align: left;
+    right: 0;
+    text-transform: uppercase;
+    top: 0;
+    padding-left: 100px;
+    padding-top:1rem;
+    animation: rotate 9s infinite;
+}
+
+.rotatingText-adjective:nth-of-type(1) {
+  animation-delay: 0s;
+}
+
+.rotatingText-adjective:nth-of-type(2) {
+  animation-delay: 3s;
+}
+
+.rotatingText-adjective:nth-of-type(3) {
+  animation-delay: 6s;
+}
+
+
+@keyframes rotate {
+  0% { opacity: 0; transform: translateY(15px); }
+  10%, 30% { opacity: 1; transform: translateY(0); }
+  40%, 100% { opacity: 0; transform: translateY(-15px); }
+}
+  
     </style>
   </head>
-  <body  style="margin: 0; padding: 0; background: url('assets/images/manit_bg.jpeg') no-repeat center center fixed; background-size: cover;">
+  <body  style="margin: 0; padding: 0; background: url('/assets/images/manit_bg.jpeg') no-repeat center center fixed; background-size: cover;">
      
     <nav class="navbar navbar-expand-lg navbar-dark">
       
@@ -187,67 +208,39 @@
                   <img height="50px" alt="MANIT" class="img img-responsive" src="/assets/images/MANIT logo.png">
           </a>
       <div class="collapse navbar-collapse" id="navbarNavAltMarkupTopHeader">
-          <div class="navbar-nav">
-              <ul style="padding: 0px; margin: 0px;">
-                  <li class="d-none d-md-block d-lg-block text-warning">
-                    <label>Maulana Azad National Institute of Technology</label>
-                  </li>
-                  <li class="d-none d-md-block d-lg-block text-white">
-                      
-                    <label>Bhopal, Madhya Pradesh 462003</label>
-                      
-                  </li>
-              </ul>
-          </div>
-      </div>
-      <% const alertMessage = message || 'Welcome! Please log in.'; %>
+    <div class="navbar-nav">
+        <ul style="padding: 0px; margin: 0px;">
+            <li class="d-none d-md-block d-lg-block text-warning">
+                <!-- Rotating Text Slider -->
+                <p class="rotatingText">
+                    <span class="rotatingText-adjective">Maulana Azad National Institute of Technology</span>
+                    <span class="rotatingText-adjective">Faculty Feedback System</span>
+                    
+                    <span class="rotatingText-adjective">MANIT Bhopal</span> 
+                    
+                </p>
+            </li>
+        </ul>
+    </div>
+</div>
+
+     
     
   </nav>
-  <div class="alert alert-success" role="alert">
-    <%= alertMessage %>
-  </div>
-    <!-- <form action="/api/user/login" method="post">
-        <section class="form-02-main">
-            <div class="container">
-              <div class="row">
-                <div class="col-md-12">
-                  <div class="_lk_de">
-                    <div class="form-03-main">
-                      <div class="logo">
-                        <img src="assets/images/user.png">
-                        
-                      </div>
-                      <h4 align="center">Login Here</h4>  
-                      <div class="form-group">
-                        <input type="text" id ="uniqueid" name="username" class="form-control _ge_de_ol" placeholder="Enter UniqueID" required="" aria-required="true">
-                      </div>
-      
-                      <div class="form-group">
-                        <input type="password" name="password" class="form-control _ge_de_ol" type="text" placeholder="Enter Password" required="" aria-required="true">
-                      </div>
-      
-      
-                      <div class="form-group">
-                        <div class="_btn_04">
-                            <button type="submit" class="transparent-button">Login</button>
-                        </div>
-                      </div>
-      
-                      <div class="form-group nm_lk"><p></p></div>
-      
-                      <div class="form-group pt-0">
-                        <div class="_social_04">
-                            <p>Don't have an account? <a href="/signup">Sign up here</a>.</p>
-                           
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-        </form> -->
+  <% const alertMessage = message || 'Welcome! Please log in.'; %> 
+<% if (alertMessage) { %>
+    <div class="alert alert-info alert-dismissible fade show text-center" role="alert" 
+         style="margin: 15px auto; width: 60%; max-width: 500px; padding: 15px; 
+                border-radius: 8px; font-size: 16px; font-weight: 500; 
+                box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); background-color: #e3f2fd; color: #0d47a1;">
+        <strong>ℹ️ Info:</strong> <%= alertMessage %>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close" style="font-size: 18px; color: #0d47a1;">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+<% } %>
+
+ 
         <form action="/api/user/login" method="post">
           <section class="form-02-main">
               <div class="container">
@@ -256,7 +249,7 @@
                           <div class="_lk_de">
                               <div class="form-03-main dark-theme">
                                   <div class="logo">
-                                      <img src="assets/images/user.png">
+                                      <img src="/assets/images/user.png">
                                   </div>
                                   <h4 align="center">Login Here</h4>  
                                   <div class="form-group">
