@@ -88,7 +88,9 @@ export default class UserController {
                   console.log("Subjects outside:", subjects);
                   console.log("faculties:", faculties);
                   // res.send("asdmfklsvjbhskalj");
-                  res.render('feedback',{ subjects, faculties,questionsArray ,uniqueId});
+                  // res.render('feedback',{ subjects, faculties,questionsArray ,uniqueId});
+                  req.session.feedbackData = { subjects, faculties, questionsArray, uniqueId };
+                  res.redirect("/feedback");
               }
               else{
                 res.render("login", { message: "You have already filled the feedback"});
@@ -107,7 +109,12 @@ export default class UserController {
               branch_name: user.branch_name,
             };
             console.log(req.session.adminDetails);
-            return res.render("admin", { discipline: user.discipline_id, branch_name: user.branch_name });
+            // return res.render("admin", { discipline: user.discipline_id, branch_name: user.branch_name });
+            req.session.adminDetails = {
+              discipline: user.discipline_id,
+              branch_name: user.branch_name
+          };
+          res.redirect("/admin");
           
           }
       });
@@ -115,67 +122,6 @@ export default class UserController {
 }
 
 
-
-    // passport.authenticate("local")(req, res, async() => {
-    //   console.log(user);
-    //   if (!user) {
-    //           // Authentication failed, redirect to login page with error message
-    //           return res.redirect("/login?error=auth");
-    //         }
-    //         // Authentication successful, check user's rrole and redirect accordingly
-    //         if (user.role === "Student") {
-    //           if(user.is_allowed==false){
-    //             res.send("The feedback form is currently unavailable for your semester");
-    //           }
-    //           else{
-    //             if(user.has_filled===false){
-    //               const branch_name = user.branch_name;
-    //               const uniqueId=user.uniqueid;
-    //               const semester=user.semester;
-    //               const discipline_id=user.discipline_id;
-    //                 const year = user.year;
-    //                 const subjects = await this.branchRepo.fetchSubjects(semester,discipline_id,uniqueId,branch_name, year);
-    //                 console.log(subjects);
-    //                 const faculties = await this.subjectRepo.fetchfaculties(subjects,user.section);
-    //                 const questionsArray = [
-    //                   "How would you rate the clarity of the instructor's explanations?",
-    //                   "Did the instructor effectively engage with the students?",
-    //                   "Were the course materials organized and easy to follow?",
-    //                   "Did the instructor provide helpful feedback on assignments?",
-    //                   "How approachable was the instructor for questions and assistance?",
-    //                   "Did the instructor encourage active participation in class discussions?",
-    //                   "Did the instructor demonstrate a good understanding of the subject matter?",
-    //                   "Was the pace of the course appropriate for learning?",
-    //                   "Did the instructor encourage critical thinking and problem-solving?",
-    //                   "Overall, how satisfied are you with the instructor's teaching?"
-    //               ];
-    //                 console.log("Subjects outside:", subjects);
-    //                 console.log("faculties:", faculties);
-    //                 // res.send("asdmfklsvjbhskalj");
-    //                 res.render('feedback',{ subjects, faculties,questionsArray ,uniqueId});
-    //             }
-    //             else{
-    //               res.send("You have already filled the feedback");
-    //             }
-    //           }
-              
-    //         } else if(user.role == "faculty") {
-    //           const uniqueid=user.uniqueid;
-    //           const feedbacks=await this.feedbackRepo.fetchfeedback(uniqueid);
-    //           console.log(feedbacks);
-    //           return res.render("dashboard",{feedbacks});
-    //         }
-    //         else if(user.role == "admin"){
-    //           req.session.adminDetails = {
-    //             discipline: user.discipline_id,
-    //             branch_name: user.branch_name,
-    //           };
-    //           console.log(req.session.adminDetails);
-    //           return res.render("admin", { discipline: user.discipline_id, branch_name: user.branch_name });
-            
-    //         }
-    // });
-  // }
 }
 
 

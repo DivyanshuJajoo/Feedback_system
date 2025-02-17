@@ -149,9 +149,15 @@ app.post(
   })
 );
 
+app.get("/feedback", checkAuthenticated, (req, res) => {
+  if (!req.session.feedbackData) {
+      return res.redirect("/login"); // Handle missing session data
+  }
 
+  const { subjects, faculties, questionsArray, uniqueId } = req.session.feedbackData;
+  res.render("feedback", { subjects, faculties, questionsArray, uniqueId });
 
-
+});
 
 
 app.post('/submit-feedback', async (req, res) => {
@@ -321,9 +327,15 @@ app.post('/submit-feedback', async (req, res) => {
 app.get('/collegeDetails',checkAuthenticated, (req, res) => {
   res.render('collegeDetails.ejs'); 
 });
-app.get('/admin',checkAuthenticated, (req, res) => {
-  res.render('admin.ejs'); 
+app.get('/admin', checkAuthenticated, (req, res) => {
+  if (!req.session.adminDetails) {
+      return res.redirect("/login"); // Handle missing session data
+  }
+
+  const { discipline, branch_name } = req.session.adminDetails;
+  res.render('admin.ejs', { discipline, branch_name });
 });
+
 
 
 
