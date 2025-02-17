@@ -7532,3 +7532,7 @@
 {"level":"info","message":"/admin-{}","service":"request-logging"}
 {"level":"info","message":"/logout?_method=DELETE-{}","service":"request-logging"}
 {"level":"info","message":"/assets/images/manit.jpeg-{}","service":"request-logging"}
+{"level":"info","message":"/-{}","service":"request-logging"}
+{"level":"info","message":"/assets/images/manit.jpeg-{}","service":"request-logging"}
+{"level":"info","message":"/api/user/login-{\"username\":\"211112075\",\"password\":\"211112075\"}","service":"request-logging"}
+{"level":"info","message":"/feedback-{}","service":"request-logging"}
