@@ -44,7 +44,7 @@ textarea {
 }
 
 .form-02-main{
-  background:url(../images/manit.jpeg);
+  background:url(/assets/images/manit.jpeg);
   background-size:cover;
   background-repeat:no-repeat;
   background-position:center;

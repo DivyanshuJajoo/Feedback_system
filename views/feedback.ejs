@@ -5,54 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Feedback Page</title>
     <link rel="stylesheet" href="/styles_feed.css">
-    <style>
-        .bullet-points {
-            list-style-type: none;
-            padding: 0;
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-
-        .bullet-points li {
-            font-weight: bold;
-            cursor: pointer;
-            padding: 10px;
-            border-radius: 50%;
-            border: 2px solid #ccc;
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .bullet-points li.active {
-            background-color: #007bff;
-            color: #fff;
-            border-color: #007bff;
-        }
-
-        .next-button, .submit-button {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-
-        .next-button:hover, .submit-button:hover {
-            background-color: #0056b3;
-        }
-    </style>
 </head>
 <body>
     <div class="container">
         <h1 align="center">Feedback Page</h1>
+        <form action="/logout?_method=DELETE" method="POST" class="logout-form">
+            <button type="submit" class="logout-button">Logout</button>
+        </form>
         <form id="feedbackForm" action="/submit-feedback" method="post">
-            <h4>Note: 10 is the best, and 1 is the worst.</h4>
+            <h5>Note: <i>10</i> will be considered as <b><i>best</i></b> and <i>1</i> will be considered as <b><i>worst</i></b>.</h5>
 
             <input type="hidden" name="uniqueId" id="uniqueId" value="<%= uniqueId %>">
             <input type="hidden" name="faculties" id="faculties" value='<%= JSON.stringify(faculties) %>'>
@@ -64,6 +25,13 @@
 
                     <% for (let i = 1; i <= 10; i++) { %>
                         <h5><%= questionsArray[i-1] %></h5>
+                        <div style="display: flex; width: 100%; font-style: italic; font-weight: bold; color: red;">
+                            <span style="flex: 1; text-align: left;">Worst</span> 
+                            <!-- <span style="flex: 1; text-align: right;">Best</span> -->
+                        </div>
+                        
+                        
+                
                         <ul class="bullet-points">
                             <% for (let j = 1; j <= 10; j++) { %>
                                 <li onclick="selectPoint(<%= j %>, <%= i %>, <%= index %>)" id="point<%= index %>-<%= i %>-<%= j %>">
@@ -72,6 +40,10 @@
                             <% } %>
                         </ul>
                         <input type="hidden" name="selectedPoint<%= index %>-<%= i %>" id="selectedPoint<%= index %>-<%= i %>" value="0">
+                        <div style="display: flex; width: 100%; font-style: italic; font-weight: bold; color: green;">
+                            <!-- <span style="flex: 1; text-align: left;">Worst</span>  -->
+                            <span style="flex: 1; text-align: right; padding-right: 15px;">Best</span>
+                        </div>
                     <% } %>
 
                     <label for="remark<%= index %>">Remark:</label><br>
@@ -107,6 +79,7 @@
             if (currentIndex === facultiesCount - 1) {
                 document.getElementById('submitButton').style.display = 'inline';
             }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function validateFeedback(index) {
@@ -140,5 +113,7 @@
             }
         });
     </script>
+    
 </body>
+<%- include('partials/footer') %>
 </html>
